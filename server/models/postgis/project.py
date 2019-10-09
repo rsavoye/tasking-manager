@@ -44,6 +44,7 @@ from server.models.postgis.statuses import (
 from server.models.postgis.tags import Tags
 from server.models.postgis.task import Task, TaskHistory
 from server.models.postgis.user import User
+from server.models.postgis.statuses import UserRole
 
 from server.models.postgis.utils import (
     ST_SetSRID,
@@ -829,21 +830,40 @@ class Project(db.Model):
 
         return self, base_dto
 
-    def as_dto_for_mapping(self, locale: str, abbrev: bool) -> Optional[ProjectDTO]:
+    def as_dto_for_mapping(
+        self, authenticated_user_id: int, locale: str, abbrev: bool
+    ) -> Optional[ProjectDTO]:
         """ Creates a Project DTO suitable for transmitting to mapper users """
-        project, project_dto = self._get_project_and_base_dto()
+        # Check for project visibility settings
+        is_allowed_user = True
+        if self.private:
+            is_allowed_user = False
+            if authenticated_user_id:
+                user = User().get_by_id(authenticated_user_id)
+                if (
+                    UserRole(user.role) == UserRole.ADMIN
+                    or authenticated_user_id == self.author_id
+                ):
+                    is_allowed_user = True
+                for user in self.allowed_users:
+                    if user.id == authenticated_user_id:
+                        is_allowed_user = True
+                        break
 
-        if abbrev is False:
-            project_dto.tasks = Task.get_tasks_as_geojson_feature_collection(self.id)
-        else:
-            project_dto.tasks = Task.get_tasks_as_geojson_feature_collection_no_geom(
-                self.id
+        if is_allowed_user:
+            project, project_dto = self._get_project_and_base_dto()
+            if abbrev is False:
+                project_dto.tasks = Task.get_tasks_as_geojson_feature_collection(
+                    self.id
+                )
+            else:
+                project_dto.tasks = Task.get_tasks_as_geojson_feature_collection_no_geom(
+                    self.id
+                )
+            project_dto.project_info = ProjectInfo.get_dto_for_locale(
+                self.id, locale, project.default_locale
             )
-        project_dto.project_info = ProjectInfo.get_dto_for_locale(
-            self.id, locale, project.default_locale
-        )
-
-        return project_dto
+            return project_dto
 
     def all_tasks_as_geojson(self):
         """ Creates a geojson of all areas """

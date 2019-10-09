@@ -41,6 +41,11 @@ class ProjectsRestAPI(Resource):
             - application/json
         parameters:
             - in: header
+              name: Authorization
+              description: Base64 encoded session token
+              type: string
+              default: Token sessionTokenHere==
+            - in: header
               name: Accept-Language
               description: Language user is requesting
               type: string
@@ -83,21 +88,26 @@ class ProjectsRestAPI(Resource):
                 if request.args.get("abbreviated")
                 else False
             )
-
             project_dto = ProjectService.get_project_dto_for_mapper(
-                project_id, request.environ.get("HTTP_ACCEPT_LANGUAGE"), abbreviated
+                project_id,
+                tm.authenticated_user_id,
+                request.environ.get("HTTP_ACCEPT_LANGUAGE"),
+                abbreviated,
             )
-            project_dto = project_dto.to_primitive()
+            if project_dto:
+                project_dto = project_dto.to_primitive()
 
-            if as_file:
-                return send_file(
-                    io.BytesIO(geojson.dumps(project_dto).encode("utf-8")),
-                    mimetype="application/json",
-                    as_attachment=True,
-                    attachment_filename=f"project_{str(project_id)}.json",
-                )
+                if as_file:
+                    return send_file(
+                        io.BytesIO(geojson.dumps(project_dto).encode("utf-8")),
+                        mimetype="application/json",
+                        as_attachment=True,
+                        attachment_filename=f"project_{str(project_id)}.json",
+                    )
 
-            return project_dto, 200
+                return project_dto, 200
+            else:
+                return {"Error": "Private Project"}, 403
         except NotFound:
             return {"Error": "Project Not Found"}, 404
         except ProjectServiceError:

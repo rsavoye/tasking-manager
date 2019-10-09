@@ -94,7 +94,9 @@ class ProjectService:
         return contribs_dto
 
     @staticmethod
-    def get_project_dto_for_mapper(project_id, locale="en", abbrev=False) -> ProjectDTO:
+    def get_project_dto_for_mapper(
+        project_id, current_user_id, locale="en", abbrev=False
+    ) -> ProjectDTO:
         """
         Get the project DTO for mappers
         :param project_id: ID of the Project mapper has requested
@@ -102,7 +104,7 @@ class ProjectService:
         :raises ProjectServiceError, NotFound
         """
         project = ProjectService.get_project_by_id(project_id)
-        return project.as_dto_for_mapping(locale, abbrev)
+        return project.as_dto_for_mapping(current_user_id, locale, abbrev)
 
     @staticmethod
     def get_project_tasks(project_id):

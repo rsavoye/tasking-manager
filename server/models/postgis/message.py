@@ -23,6 +23,9 @@ class MessageType(Enum):
     )  # Notification that user's mapped task was invalidated
     REQUEST_TEAM_NOTIFICATION = 6
     INVITATION_NOTIFICATION = 7
+    TASK_COMMENT_NOTIFICATION = 6
+    PROJECT_CHAT_NOTIFICATION = 7
+    PROJECT_ACTIVITY_NOTIFICATION = 8
 
 
 class Message(db.Model):

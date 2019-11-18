@@ -16,11 +16,7 @@ class Notification(db.Model):
 
     __tablename__ = "notifications"
 
-    __table_args__ = (
-        db.ForeignKeyConstraint(
-            ["user_id"], ["users.id"]
-        ),
-    )
+    __table_args__ = (db.ForeignKeyConstraint(["user_id"], ["users.id"]),)
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.BigInteger, db.ForeignKey("users.id"), index=True)
@@ -48,6 +44,4 @@ class Notification(db.Model):
     @staticmethod
     def get_unread_message_count(user_id: int):
         """ Get count of unread messages for user """
-        return Notification.query.filter(
-            Notification.user_id == user_id
-        ).count()
+        return Notification.query.filter(Notification.user_id == user_id).count()

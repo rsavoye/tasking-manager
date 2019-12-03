@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '84c793a951b2'
-down_revision = '772aff899389'
+revision = "84c793a951b2"
+down_revision = "772aff899389"
 branch_labels = None
 depends_on = None
 
@@ -27,16 +27,10 @@ def upgrade():
         sa.PrimaryKeyConstraint("id", name="notifications_pkey"),
     )
     op.create_index(
-        "idx_notifications_user_id",
-        "notifications",
-        ["user_id"],
-        unique=False,
+        "idx_notifications_user_id", "notifications", ["user_id"], unique=False
     )
 
 
 def downgrade():
-    op.drop_index(
-        "idx_notifications_user_id",
-        table_name="notifications",
-    )
+    op.drop_index("idx_notifications_user_id", table_name="notifications")
     op.drop_table("notifications")

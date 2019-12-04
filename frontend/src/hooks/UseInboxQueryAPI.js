@@ -1,17 +1,14 @@
 import {
   useQueryParams,
-  encodeQueryParams,
-  stringify as stringifyUQP,
   StringParam,
+  stringify as stringifyUQP,
   NumberParam,
-  BooleanParam,
 } from 'use-query-params';
-import { CommaArrayParam } from '../utils/CommaArrayParam';
-import { useThrottle } from '../hooks/UseThrottle';
 import { useSelector } from 'react-redux';
+import { useThrottle } from '../hooks/UseThrottle';
 
 /* See also moreFiltersForm, the useQueryParams are duplicated there for specific modular usage */
-/* This one is e.g. used for updating the URL when returning to /explore
+/* This one is e.g. used for updating the URL when returning to /contribute
  *  and directly submitting the query to the API */
 
 import { useEffect, useReducer } from 'react';
@@ -19,45 +16,50 @@ import axios from 'axios';
 
 import { API_URL } from '../config';
 
-const projectQueryAllSpecification = {
-  difficulty: StringParam,
-  organisation: StringParam,
-  campaign: StringParam,
-  location: StringParam,
-  types: CommaArrayParam,
+const inboxQueryAllSpecification = {
+  type: NumberParam,
+  fromUsername: StringParam,
+  project: StringParam,
+  taskId: NumberParam,
   page: NumberParam,
-  text: StringParam,
+  pageSize: NumberParam,
   orderBy: StringParam,
   orderByType: StringParam,
-  createdByMe: BooleanParam,
-  favoritedByMe: BooleanParam,
-  contributedToByMe: BooleanParam,
-  createdByMeArchived: BooleanParam
 };
 
 /* This can be passed into project API or used independently */
-export const useExploreProjectsQueryParams = () => {
-  return useQueryParams(projectQueryAllSpecification);
+export const useInboxQueryParams = () => {
+  const uqp = useQueryParams(inboxQueryAllSpecification);
+
+  /* TODO: refactor this larger fn to do useCallback or useMemo, below probably really expensive */
+  const [qpValue, setQ] = uqp;
+  if (qpValue && qpValue.page === undefined) {
+    setQ({
+      type: 4,
+      pageSize: 10,
+      page: 1,
+      orderBy: 'date',
+      orderByType: 'desc'
+    })
+  }
+
+  return uqp;
 };
 
 /* The API uses slightly different JSON keys than the queryParams,
-   this fn takes an object with queryparam keys and outputs JSON keys
+   this fn takes an object with queryparam keys and outputs JSON keys 
    while maintaining the same values */
 const remapParamsToAPI = param => {
+  /* TODO support all  message types */
   const conversion = {
-    difficulty: 'mapperLevel',
-    campaign: 'campaignTag',
-    organisation: 'organisationName',
-    location: 'country',
-    types: 'mappingTypes',
-    text: 'textSearch',
+    type: 'messageType',
+    fromUsername: 'from',
+    project: 'project',
+    taskId: 'taskId',
+    orderByType: 'sortBy',
+    orderBy: 'sortDirection',
     page: 'page',
-    orderBy: 'orderBy',
-    orderByType: 'orderByType',
-    createdByMe: 'createdByMe',
-    favoritedByMe: 'favoritedByMe',
-    contributedToByMe: 'contributedToByMe',
-    createdByMeArchived: 'createdByMeArchived'
+    pageSize: 'pageSize'
   };
   function mapObject(obj, fn) {
     return Object.fromEntries(Object.entries(obj).map(fn));
@@ -86,8 +88,8 @@ const dataFetchReducer = (state, action) => {
         ...state,
         isLoading: false,
         isError: false,
-        projects: action.payload.results,
-        mapResults: action.payload.mapResults,
+        notifications: action.payload.userMessages,
+        // mapResults: action.payload.mapResults,
         pagination: action.payload.pagination,
       };
     case 'FETCH_FAILURE':
@@ -111,7 +113,7 @@ const defaultInitialData = {
   pagination: { hasNext: false, hasPrev: false, page: 1 },
 };
 
-export const useProjectsQueryAPI = (
+export const useInboxQueryAPI = (
   initialData = defaultInitialData,
   ExternalQueryParamsState,
   forceUpdate = null,
@@ -140,32 +142,20 @@ export const useProjectsQueryAPI = (
         type: 'FETCH_INIT',
       });
 
-
-      const headers = token ? { Authorization: `Token ${token}` } : {};
-
       try {
+        if (!token) {
+          throw Error("No authentication token specified for inbox query")
+        }
         const result = await axios({
-          url: `${API_URL}projects/`,
+          url: `${API_URL}notifications/`,
           method: 'get',
           params: remapParamsToAPI(throttledExternalQueryParamsState),
-          headers: headers,
+          headers: { Authorization: `Token ${token}` },
           cancelToken: new CancelToken(function executor(c) {
             // An executor function receives a cancel function as a parameter
             cancel = { end: c, params: throttledExternalQueryParamsState };
           }),
         });
-
-         const meh= {
-          url: `${API_URL}projects/`,
-          method: 'get',
-          params: remapParamsToAPI(throttledExternalQueryParamsState),
-          ...headers,
-          cancelToken: new CancelToken(function executor(c) {
-            // An executor function receives a cancel function as a parameter
-            cancel = { end: c, params: throttledExternalQueryParamsState };
-          }),
-        }
-        console.log(meh)
 
         if (!didCancel) {
           if (result && result.headers && result.headers['content-type'].indexOf('json') !== -1) {
@@ -185,7 +175,7 @@ export const useProjectsQueryAPI = (
           error &&
           error.response &&
           error.response.data &&
-          error.response.data.Error === 'No projects found'
+          error.response.data.Error === 'No notifications found'
         ) {
           const zeroPayload = Object.assign(defaultInitialData, { pagination: { total: 0 } });
           /* TODO(tdk): when 404 and page > 1, re-request page 1 */
@@ -229,7 +219,4 @@ export const useProjectsQueryAPI = (
   return [state, dispatch];
 };
 
-export const stringify = obj => {
-  const encodedQuery = encodeQueryParams(projectQueryAllSpecification, obj);
-  return stringifyUQP(encodedQuery);
-};
+export const stringify = stringifyUQP;

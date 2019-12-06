@@ -175,7 +175,7 @@ export const useInboxQueryAPI = (
           error &&
           error.response &&
           error.response.data &&
-          error.response.data.Error === 'No notifications found'
+          error.response.data.Error === 'No messages found'
         ) {
           const zeroPayload = Object.assign(defaultInitialData, { pagination: { total: 0 } });
           /* TODO(tdk): when 404 and page > 1, re-request page 1 */
@@ -203,7 +203,7 @@ export const useInboxQueryAPI = (
           dispatch({ type: 'FETCH_FAILURE' });
         } else {
           // console.log("tried to cancel on failure",cancel.params);
-          cancel.end();
+          cancel && cancel.end();
         }
       }
     };
@@ -212,7 +212,7 @@ export const useInboxQueryAPI = (
     return () => {
       didCancel = true;
       // console.log("tried to cancel on effect cleanup ",cancel.params)
-      cancel.end();
+      cancel && cancel.end();
     };
   }, [throttledExternalQueryParamsState, forceUpdate, token]);
 

@@ -64,11 +64,11 @@ export const NotificationResults = props => {
   );
 };
 
-function NotificationCards({ pageOfCards }: Object) {
-  if (pageOfCards && pageOfCards.length === 0) {
+const NotificationCards = props => {
+  if (!props || !props.pageOfCards || props.pageOfCards.length === 0) {
     return null;
   }
-  return pageOfCards.map((card, n) => (
+  return props.pageOfCards.map((card, n) => (
     <NotificationCard {...card} key={n} />
   ));
 }

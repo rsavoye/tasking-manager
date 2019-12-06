@@ -19,6 +19,7 @@ import { logout } from '../../store/actions/auth';
 import { setLocale } from '../../store/actions/userPreferences';
 import { createLoginWindow } from '../../utils/login';
 import { supportedLocales } from '../../utils/internationalization';
+import { BellIcon } from '../svgIcons';
 
 function getMenuItensForUser(userDetails) {
   const menuItems = [
@@ -103,6 +104,8 @@ class Header extends React.Component {
             <FormattedMessage {...item.label} />
           </TopNavLink>
         ))}
+        {showNotificationsLink && <TopNavLink to={'inbox/'} isActive={this.isActive}><BellIcon /></TopNavLink>}
+
       </div>
     );
   }

@@ -1,28 +1,17 @@
 import React from 'react';
-import NavLink from '../header/NavLink';
 import { Link } from '@reach/router';
 import { FormattedMessage } from 'react-intl';
-import { useSelector, useDispatch } from 'react-redux';
 
 import messages from './messages';
-import { Dropdown } from '../dropdown';
 import { useInboxQueryParams, stringify } from '../../hooks/UseInboxQueryAPI';
 
 /*REMOVE ME*/
-import OrderByPicker from '../projects/orderByPicker';
 import { ProjectSearchBox } from '../projects/projectSearchBox';
 import { useExploreProjectsQueryParams } from '../../hooks/UseProjectsQueryAPI';
 
 export const InboxNav = props => {
     const [fullProjectsQuery, setProjQuery] = useExploreProjectsQueryParams();
     const [inboxQuery, setQuery] = useInboxQueryParams();
-    // const {
-    // //   organisation: queryParamOrganisation,
-    //   // campaign: queryParamCampaign
-    // } = inboxQuery;
-    const encodedParams = stringify(inboxQuery)
-      ? ['?', stringify(inboxQuery)].join('')
-      : '';
   
     const linkCombo = 'link ph3 f6 pv2 ba b--grey-light';
   
@@ -40,7 +29,6 @@ export const InboxNav = props => {
             <div className="w-90-ns w-100 fl dib">
             <div className="dib">
                 <div className="mv2 dib">
-                {/* <DifficultyDropdown setQuery={setQuery} fullProjectsQuery={fullProjectsQuery} /> */}
                 </div>
 
                 <ProjectSearchBox
@@ -49,11 +37,6 @@ export const InboxNav = props => {
                 fullProjectsQuery={fullProjectsQuery}
                 placeholder="Search (localize)" />
 
-                <OrderByPicker
-                linkCombo={`${linkCombo} mh1`}
-                setQuery={setProjQuery}
-                allQueryParams={fullProjectsQuery}
-                />
                 <Link
                     to="./"
                     className={`red link ph3 f6 pv2 mh1 fr
@@ -70,31 +53,31 @@ export const InboxNav = props => {
         </div>
         <div className="ma2">
                 <Link
-                    to="./"
+                    to="inbox/?orderBy=date&orderByType=desc&page=1&pageSize=10&type=4"
                     className={`di di-m mh1 ${linkCombo}
                     `}
                 >
                     <FormattedMessage {...messages.all} />
                 </Link>
                 <Link
-                    to="./"
+                    to="inbox/?orderBy=date&orderByType=desc&page=1&pageSize=10&type=6"
                     className={`di di-m mh1 ${linkCombo}
                     `}
                 >
                     <FormattedMessage {...messages.messages} />
                 </Link>
-                <NavLink
-                to={'/'}
+                <Link
+                to={'inbox/?orderBy=date&orderByType=desc&page=1&pageSize=10&type=8'}
                 className={`di di-m mh1 ${linkCombo} `}
                 >
                 <FormattedMessage {...messages.tasks} />
-                </NavLink>
-                <NavLink
-                to='/'
+                </Link>
+                <Link
+                to='inbox/?orderBy=date&orderByType=desc&page=1&pageSize=10&type=9'
                 className={`di di-m mh1 ${linkCombo} `}
                 >
                 <FormattedMessage {...messages.projects} />
-                </NavLink>
+                </Link>
             </div>
         {props.children}
         </header>

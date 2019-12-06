@@ -36,7 +36,7 @@ export const NotificationsPage = props => {
             <div className="pt4-l pb5 ph5-l ph4 pt180 pull-center">
               <section className="cf">
                 <InboxNav />
-                <NotificationResults state={state} />
+                <NotificationResults retryFn={forceUpdate} state={state} />
                 <ProjectCardPaginator  projectAPIstate={state} setQueryParam={setInboxQuery} />
                 <code>{JSON.stringify(state)}</code>
 

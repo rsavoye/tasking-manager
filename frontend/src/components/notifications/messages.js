@@ -24,6 +24,10 @@ export default defineMessages({
     id: 'notifications.filter.projects',
     defaultMessage: 'Projects',
   },
+  clearFilters: {
+    id: 'notifications.filter.clear',
+    defaultMessage: 'Clear filters',
+  },
   errorLoadingTheXForY: {
     id: 'notifications.navFilters.error',
     defaultMessage: 'Error loading the {xWord} for {yWord}',

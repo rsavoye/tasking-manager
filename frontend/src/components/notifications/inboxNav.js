@@ -9,12 +9,21 @@ import { useInboxQueryParams, stringify } from '../../hooks/UseInboxQueryAPI';
 import { ProjectSearchBox } from '../projects/projectSearchBox';
 import { useExploreProjectsQueryParams } from '../../hooks/UseProjectsQueryAPI';
 
+const isActiveButton = (buttonName, projectQuery) => {
+    const allBoolean = projectQuery.type === undefined;
+    if (projectQuery['type'] === buttonName || (buttonName ==='All' && allBoolean)) {
+      return 'bg-blue-dark grey-light';
+    } else {
+      return 'bg-white grey-light';
+    }
+  }
+
 export const InboxNav = props => {
     const [fullProjectsQuery, setProjQuery] = useExploreProjectsQueryParams();
     const [inboxQuery, setQuery] = useInboxQueryParams();
   
     const linkCombo = 'link ph3 f6 pv2 ba b--grey-light';
-  
+    const notAnyFilter = !stringify(inboxQuery);
     return (
         /* mb1 mb2-ns (removed for map, but now small gap for more-filters) */
         <header className=" w-100 ">
@@ -37,13 +46,13 @@ export const InboxNav = props => {
                 fullProjectsQuery={fullProjectsQuery}
                 placeholder="Search (localize)" />
 
-                <Link
+            {!notAnyFilter && <Link
                     to="./"
                     className={`red link ph3 f6 pv2 mh1 fr
                     `}
                 >
-                    <FormattedMessage {...messages.notifications} />
-                </Link>
+                    <FormattedMessage {...messages.clearFilters} />
+                </Link>}
 
             </div>
             </div>
@@ -53,28 +62,28 @@ export const InboxNav = props => {
         </div>
         <div className="ma2">
                 <Link
-                    to="inbox/?orderBy=date&orderByType=desc&page=1&pageSize=10&type=4"
-                    className={`di di-m mh1 ${linkCombo}
+                    to="?orderBy=date&orderByType=desc&page=1&pageSize=10"
+                    className={`di di-m mh1 ${isActiveButton('All', inboxQuery)} ${linkCombo}
                     `}
                 >
                     <FormattedMessage {...messages.all} />
                 </Link>
                 <Link
-                    to="inbox/?orderBy=date&orderByType=desc&page=1&pageSize=10&type=6"
-                    className={`di di-m mh1 ${linkCombo}
+                    to="?orderBy=date&orderByType=desc&page=1&pageSize=10&type=6"
+                    className={`di di-m mh1 ${isActiveButton(6, inboxQuery)}  ${linkCombo}
                     `}
                 >
                     <FormattedMessage {...messages.messages} />
                 </Link>
                 <Link
-                to={'inbox/?orderBy=date&orderByType=desc&page=1&pageSize=10&type=8'}
-                className={`di di-m mh1 ${linkCombo} `}
+                to={'?orderBy=date&orderByType=desc&page=1&pageSize=10&type=8'}
+                className={`di di-m mh1 ${isActiveButton(8, inboxQuery)}  ${linkCombo} `}
                 >
                 <FormattedMessage {...messages.tasks} />
                 </Link>
                 <Link
-                to='inbox/?orderBy=date&orderByType=desc&page=1&pageSize=10&type=9'
-                className={`di di-m mh1 ${linkCombo} `}
+                to='?orderBy=date&orderByType=desc&page=1&pageSize=10&type=9'
+                className={`di di-m mh1 ${isActiveButton(9, inboxQuery)}  ${linkCombo} `}
                 >
                 <FormattedMessage {...messages.projects} />
                 </Link>

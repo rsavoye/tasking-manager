@@ -56,6 +56,7 @@ export const NotificationResults = props => {
         <ReactPlaceholder
           // customPlaceholder={nCardPlaceholders(5, cardWidthClass)}
           ready={!state.isLoading}
+          type="media" rows={10}
         >
           <NotificationCards pageOfCards={state.notifications} />
         </ReactPlaceholder>
@@ -68,7 +69,5 @@ const NotificationCards = props => {
   if (!props || !props.pageOfCards || props.pageOfCards.length === 0) {
     return null;
   }
-  return props.pageOfCards.map((card, n) => (
-    <NotificationCard {...card} key={n} />
-  ));
-}
+  return props.pageOfCards.map((card, n) => <NotificationCard {...card} key={n} />);
+};

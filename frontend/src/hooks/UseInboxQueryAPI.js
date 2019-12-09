@@ -35,7 +35,6 @@ export const useInboxQueryParams = () => {
   const [qpValue, setQ] = uqp;
   if (qpValue && qpValue.page === undefined) {
     setQ({
-      type: 4,
       pageSize: 10,
       page: 1,
       orderBy: 'date',

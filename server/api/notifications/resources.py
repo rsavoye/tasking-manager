@@ -121,8 +121,9 @@ class NotificationsAllAPI(Resource):
               default: Token sessionTokenHere==
             - in: query
               name: messageType
-              description: Optional message-type filter
-              type: integer
+              type: string
+              description: Optional message-type filter; leave blank to retrieve all
+              default: 1,2
             - in: query
               name: from
               description: Optional from username filter
@@ -163,9 +164,9 @@ class NotificationsAllAPI(Resource):
             preferred_locale = request.environ.get("HTTP_ACCEPT_LANGUAGE")
             page = request.args.get("page", 1, int)
             page_size = request.args.get("pageSize", 10, int)
-            sort_by = request.args.get("sortBy")
-            sort_direction = request.args.get("sortDirection")
-            message_type = request.args.get("messageType", None, int)
+            sort_by = request.args.get("sortBy", "date")
+            sort_direction = request.args.get("sortDirection", "desc")
+            message_type = request.args.get("messageType", None)
             from_username = request.args.get("from")
             project = request.args.get("project")
             task_id = request.args.get("taskId", None, int)

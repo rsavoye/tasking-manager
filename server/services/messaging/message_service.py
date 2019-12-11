@@ -418,8 +418,9 @@ class MessageService:
         if task_id is not None:
             query = query.filter(Message.task_id == task_id)
 
-        if message_type is not None:
-            query = query.filter(Message.message_type == message_type)
+        if message_type:
+            message_type_filters = map(int, message_type.split(","))
+            query = query.filter(Message.message_type.in_(message_type_filters))
 
         if from_username is not None:
             query = query.join(Message.from_user).filter(

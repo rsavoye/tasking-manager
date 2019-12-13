@@ -7,9 +7,11 @@ import { useSelector } from 'react-redux';
 
 import { InboxNav } from '../components/notifications/inboxNav';
 import { NotificationResults } from '../components/notifications/notificationResults';
+import { NotificationBodyCard } from '../components/notifications/notificationBodyCard'
 import { ProjectCardPaginator } from '../components/projects/projectCardPaginator';
 import { CloseIcon } from '../components/svgIcons';
-import { Link } from '@reach/router';
+import { useFetch, useFetchIntervaled } from '../hooks/UseFetch';
+import { Link } from '@reach/router'
 
 export const NotificationsPage = props => {
   const initialData = {
@@ -43,13 +45,10 @@ export const NotificationsPage = props => {
         <InboxNav />
         <NotificationResults retryFn={forceUpdate} state={state} />
         <ProjectCardPaginator projectAPIstate={state} setQueryParam={setInboxQuery} />
-        <code>{JSON.stringify(state)}</code>
 
-        {/* <ProjectSearchResults
-                  state={state}
-                  retryFn={forceUpdate}
-                  className={`${searchResultWidth} fl`}
-                /> */}
+        {/* delete me TDK */}
+        <code className={`dn`}>{JSON.stringify(state)}</code>
+
         {/* {isMapShown && (
                   <ProjectsMap
                     state={state}
@@ -68,26 +67,42 @@ export const NotificationPageIndex = props => {
 };
 
 export const NotificationDetail = props => {
+
+  const [thisNotificationError, thisNotificationLoading, thisNotification] = useFetch(`notifications/${props.id}/`);
+
   /* Should we load the message again or use a context to communicate it? */
+  /* {left: '50%', '-webkit-transform': 'translateX(-50%)', 'transform': 'translateX(-50%)' */
+  /*  z-5 mt1 h-100 bg-white h4 ph2 mw5-l*/
   return (
     <>
-      <div style={{left: '50%', '-webkit-transform': 'translateX(-50%)', 'transform': 'translateX(-50%)'}}
-       className="absolute shadow-3 z-5 mt1 h-100 bg-white h4 ph2 mw5-l">
-        <div className={`relative di`}>
+      <div style={{
+          'inset': '0px',
+          'background': 'rgba(0, 0, 0, 0.5) none repeat scroll 0% 0%',
+          'display': 'flex',
+          'z-index': '999'}}
+        onClick={() => props.navigate('../../')}
+       className="fixed ">
+        <div className={`relative shadow-3`} 
+          style={{
+            'background': 'rgb(255, 255, 255) none repeat scroll 0% 0%',
+            'width': '55%',
+            'margin': '5em auto auto',
+            'border': '1px solid rgb(187, 187, 187)',
+            'padding': '5px'}}>
           <div className={`di fl tl pa3 mb3 w-100 fw5 bb b--tan`}>
             Message
-            <a className={`fr ml4`} href={`../`}>
+            <Link className={`fr ml4`} to={`../../`}>
               <CloseIcon className={`h1 w1`}/>
-            </a>
+            </Link>
           </div>
-          <div>#{props.id}</div>
+          <NotificationBodyCard loading={thisNotificationLoading} card={thisNotification}/>
           {props.children}
         </div>
       </div>
-      <div
+      {/* <div
         onClick={() => props.navigate('../')}
-        className="absolute right-0 z-4 br w-100 h-100 bg-blue-dark o-60 h6"
-      ></div>
+        className="absolute right-0 z-4 br w-100 h-100  h6"
+      ></div> */}
     </>
   );
 };

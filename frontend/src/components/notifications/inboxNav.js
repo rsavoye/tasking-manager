@@ -10,8 +10,8 @@ import { ProjectSearchBox } from '../projects/projectSearchBox';
 import { useExploreProjectsQueryParams } from '../../hooks/UseProjectsQueryAPI';
 
 const isActiveButton = (buttonName, projectQuery) => {
-    const allBoolean = projectQuery.type === undefined;
-    if (projectQuery['type'] === buttonName || (buttonName ==='All' && allBoolean)) {
+    const allBoolean = projectQuery.types === undefined;
+    if (JSON.stringify(projectQuery['types']) === JSON.stringify(buttonName) || (buttonName ==='All' && allBoolean)) {
       return 'bg-blue-dark grey-light';
     } else {
       return 'bg-white grey-light';
@@ -69,21 +69,22 @@ export const InboxNav = props => {
                     <FormattedMessage {...messages.all} />
                 </Link>
                 <Link
-                    to="?orderBy=date&orderByType=desc&page=1&pageSize=10&type=6"
-                    className={`di di-m mh1 ${isActiveButton(6, inboxQuery)}  ${linkCombo}
+                    to="?orderBy=date&orderByType=desc&page=1&pageSize=10&types=3,1,6,7"
+                    className={`di di-m mh1 ${isActiveButton(["3","1","6","7"], inboxQuery)}  ${linkCombo}
+
                     `}
                 >
                     <FormattedMessage {...messages.messages} />
                 </Link>
                 <Link
-                to={'?orderBy=date&orderByType=desc&page=1&pageSize=10&type=8'}
-                className={`di di-m mh1 ${isActiveButton(8, inboxQuery)}  ${linkCombo} `}
+                to={'?orderBy=date&orderByType=desc&page=1&pageSize=10&types=8,4,5'}
+                className={`di di-m mh1 ${isActiveButton(['8','4','5'], inboxQuery)}  ${linkCombo} `}
                 >
                 <FormattedMessage {...messages.tasks} />
                 </Link>
                 <Link
-                to='?orderBy=date&orderByType=desc&page=1&pageSize=10&type=9'
-                className={`di di-m mh1 ${isActiveButton(9, inboxQuery)}  ${linkCombo} `}
+                to='?orderBy=date&orderByType=desc&page=1&pageSize=10&types=2,9,10'
+                className={`di di-m mh1 ${isActiveButton(['2','9','10'], inboxQuery)}  ${linkCombo} `}
                 >
                 <FormattedMessage {...messages.projects} />
                 </Link>

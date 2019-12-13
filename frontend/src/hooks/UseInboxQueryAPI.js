@@ -4,6 +4,7 @@ import {
   stringify as stringifyUQP,
   NumberParam,
 } from 'use-query-params';
+import { CommaArrayParam } from '../utils/CommaArrayParam';
 import { useSelector } from 'react-redux';
 import { useThrottle } from '../hooks/UseThrottle';
 
@@ -17,7 +18,7 @@ import axios from 'axios';
 import { API_URL } from '../config';
 
 const inboxQueryAllSpecification = {
-  type: NumberParam,
+  types: CommaArrayParam,
   fromUsername: StringParam,
   project: StringParam,
   taskId: NumberParam,
@@ -51,7 +52,7 @@ export const useInboxQueryParams = () => {
 const remapParamsToAPI = param => {
   /* TODO support all  message types */
   const conversion = {
-    type: 'messageType',
+    types: 'messageType',
     fromUsername: 'from',
     project: 'project',
     taskId: 'taskId',

@@ -104,7 +104,6 @@ class Header extends React.Component {
             <FormattedMessage {...item.label} />
           </TopNavLink>
         ))}
-        {showNotificationsLink && <TopNavLink to={'inbox/'} isActive={this.isActive}><BellIcon /></TopNavLink>}
 
       </div>
     );
@@ -213,15 +212,18 @@ class Header extends React.Component {
 
   renderAuthenticationButtons() {
     return this.props.userDetails.username ? (
-      <Dropdown
-        onAdd={() => {}}
-        onRemove={() => {}}
-        onChange={this.onUserMenuSelect}
-        value={[]}
-        display={<UserDisplay username={this.props.userDetails.username} />}
-        options={this.getUserLinks(this.props.userDetails.role)}
-        className="blue-dark bg-white mr1 v-mid dn dib-ns pv2 ph3 bn"
-      />
+      <>
+        <TopNavLink to={'inbox/'} isActive={this.isActive}><BellIcon /></TopNavLink>
+        <Dropdown
+          onAdd={() => {}}
+          onRemove={() => {}}
+          onChange={this.onUserMenuSelect}
+          value={[]}
+          display={<UserDisplay username={this.props.userDetails.username} />}
+          options={this.getUserLinks(this.props.userDetails.role)}
+          className="blue-dark bg-white mr1 v-mid dn dib-ns pv2 ph3 bn"
+        />
+      </>
     ) : (
       <div className="dib">
         <Dropdown
@@ -239,6 +241,7 @@ class Header extends React.Component {
           signUpStyle="bg-blue-dark white ml1 v-mid dn dib-ns"
           redirectTo={this.props.location.pathname}
         />
+        
       </div>
     );
   }

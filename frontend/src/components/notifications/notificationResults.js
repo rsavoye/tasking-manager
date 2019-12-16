@@ -4,22 +4,26 @@ import ReactPlaceholder from 'react-placeholder';
 import 'react-placeholder/lib/reactPlaceholder.css';
 // import { nCardPlaceholders } from '../projectcard/nCardPlaceholder';
 
-import { NotificationCard } from './notificationCard';
+import { NotificationCard, NotificationCardMini } from './notificationCard';
 import { FormattedMessage, FormattedNumber } from 'react-intl';
 import messages from './messages';
+
+export const NotificationResultsMini = props => {
+  return <NotificationResults {...props} useMiniCard={true} />;
+};
 
 export const NotificationResults = props => {
   const state = props.state;
   // const cardWidthClass = 'w-third-l';
 
   return (
-    <div className={`${props.className}`}>
-      <p className={`blue-grey ml2 f7`}>
+    <div className={props.className}>
         {state.isLoading ? (
           <span>&nbsp;</span>
         ) : (
           !state.isError && (
-            <FormattedMessage
+            
+            !props.useMiniCard && <p className="blue-grey ml3 pt2 f7"><FormattedMessage
               {...messages.showingXProjectsOfTotal}
               values={{
                 numProjects: state.notifications && state.notifications.length,
@@ -32,10 +36,9 @@ export const NotificationResults = props => {
                   <FormattedNumber value={state.pagination && state.pagination.total} />
                 ),
               }}
-            />
+            /></p>
           )
         )}
-      </p>
       {state.isError ? (
         <div className="bg-tan pa4">
           <FormattedMessage
@@ -52,13 +55,14 @@ export const NotificationResults = props => {
           </div>
         </div>
       ) : null}
-      <div className="cf mh5 mh2-ns db">
+      <div className={`cf ${!props.useMiniCard ? 'mh5 mh2-ns' : ''} db`}>
         <ReactPlaceholder
           // customPlaceholder={nCardPlaceholders(5, cardWidthClass)}
           ready={!state.isLoading}
-          type="media" rows={10}
+          type="media"
+          rows={10}
         >
-          <NotificationCards pageOfCards={state.notifications} />
+          <NotificationCards pageOfCards={state.notifications} useMiniCard={props.useMiniCard} />
         </ReactPlaceholder>
       </div>
     </div>
@@ -69,5 +73,18 @@ const NotificationCards = props => {
   if (!props || !props.pageOfCards || props.pageOfCards.length === 0) {
     return null;
   }
-  return props.pageOfCards.map((card, n) => <NotificationCard {...card} key={n} />);
+  const filterFn = props.useMiniCard ? n => !n.read : n => n;
+  const filteredCards = props.pageOfCards.filter(filterFn);
+
+  if (filteredCards < 1) {
+    return (<div className="mb3 blue-grey"><FormattedMessage {...messages.noUnreadMessages}/></div>);
+  }
+
+  return filteredCards.map((card, n) =>
+    props.useMiniCard ? (
+      <NotificationCardMini {...card} key={n} />
+    ) : (
+      <NotificationCard {...card} key={n} />
+    ),
+  );
 };

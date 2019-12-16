@@ -20,6 +20,7 @@ import { setLocale } from '../../store/actions/userPreferences';
 import { createLoginWindow } from '../../utils/login';
 import { supportedLocales } from '../../utils/internationalization';
 import { BellIcon } from '../svgIcons';
+import { useFetchIntervaled } from '../../hooks/UseFetch';
 
 function getMenuItensForUser(userDetails) {
   const menuItems = [
@@ -53,6 +54,27 @@ const UserDisplay = props => {
     </span>
   );
 };
+
+const NotificationBellLink = props => {
+  const [unreadNotifsError, unreadNotifs] = useFetchIntervaled(
+    `/api/v2/notifications/queries/myself/count-unread/`,
+    30000,
+  );
+  const isNotificationBellActive = ({ isCurrent }) => {
+    return isCurrent
+      ? { className: `link barlow-condensed blue-dark f4 ttu bb b--blue-dark bw1 pv2` }
+      : { className: `link barlow-condensed blue-dark f4 ttu` };
+  };
+  const lightTheBell = !unreadNotifsError && unreadNotifs && unreadNotifs.newMessages;
+    return (
+      <TopNavLink to={'inbox/'} isActive={isNotificationBellActive} >
+      <div className="relative dib">
+        <BellIcon />
+        {lightTheBell && <div className="redicon"></div>}
+      </div>
+    </TopNavLink>
+    )
+}
 
 const AuthButtons = props => {
   const { logInStyle, signUpStyle, redirectTo } = props;
@@ -211,9 +233,10 @@ class Header extends React.Component {
   }
 
   renderAuthenticationButtons() {
+    
     return this.props.userDetails.username ? (
       <>
-        <TopNavLink to={'inbox/'} isActive={this.isActive}><BellIcon /></TopNavLink>
+        <NotificationBellLink />
         <Dropdown
           onAdd={() => {}}
           onRemove={() => {}}

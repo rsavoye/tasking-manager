@@ -1,17 +1,45 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 
 import { useInboxQueryAPI, useInboxQueryParams } from '../hooks/UseInboxQueryAPI';
 
 import useForceUpdate from '../hooks/UseForceUpdate';
 import { useSelector } from 'react-redux';
 
-import { InboxNav } from '../components/notifications/inboxNav';
-import { NotificationResults } from '../components/notifications/notificationResults';
-import { NotificationBodyCard } from '../components/notifications/notificationBodyCard'
+import { InboxNav, InboxNavMini, InboxNavMiniBottom } from '../components/notifications/inboxNav';
+import {
+  NotificationResults,
+  NotificationResultsMini,
+} from '../components/notifications/notificationResults';
+
+import { NotificationBodyModal } from '../components/notifications/notificationBodyCard';
 import { ProjectCardPaginator } from '../components/projects/projectCardPaginator';
-import { CloseIcon } from '../components/svgIcons';
-import { useFetch, useFetchIntervaled } from '../hooks/UseFetch';
-import { Link } from '@reach/router'
+
+import { useFetch } from '../hooks/UseFetch';
+import { useOnClickOutside } from '../hooks/UseOnClickOutside';
+
+export const NotificationPopout = props => {
+  const miniNotificationRef = useRef(null);
+  const [isPopoutFocus, setPopoutFocus] = useState(true);
+
+  useOnClickOutside(miniNotificationRef, () => setPopoutFocus(false));
+
+  return (
+  <div
+  ref={miniNotificationRef}
+  style={{ 'min-width': '390px', width: '390px','z-index':'100', 'right': '4rem' }}
+  className={`fr ${isPopoutFocus ? '' : 'dn'} mt2 br2 absolute shadow-2 ph4 pb3 bg-white`}
+>
+  <span className="absolute top-0 left-2 nt2 w1 h1 bg-white bl ml7 bt b--grey-light rotate-45"></span>
+  <InboxNavMini
+    newMsgCount={
+      props.state && props.state.notifications && props.state.notifications.filter(n => !n.read).length
+    }
+  />
+  <NotificationResultsMini retryFn={props.forceUpdate} state={props.state} className="" />
+  <InboxNavMiniBottom />
+</div>
+  )
+}
 
 export const NotificationsPage = props => {
   const initialData = {
@@ -34,31 +62,29 @@ export const NotificationsPage = props => {
   }
 
   return (
+    <>
+    <NotificationPopout
+     state={state}
+     forceUpdate={forceUpdate}
+     />
     <div className="pt4-l pb5 ph5-l ph4 pt180 pull-center">
       {
         props.children
-        /* This is where the full notification component is rendered
+        /* This is where the full notification body component is rendered
         using the router, as a child route.
         */
       }
       <section className="cf">
+
         <InboxNav />
         <NotificationResults retryFn={forceUpdate} state={state} />
         <ProjectCardPaginator projectAPIstate={state} setQueryParam={setInboxQuery} />
 
-        {/* delete me TDK */}
+        {/* delete me! TDK */}
         <code className={`dn`}>{JSON.stringify(state)}</code>
-
-        {/* {isMapShown && (
-                  <ProjectsMap
-                    state={state}
-                    fullProjectsQuery={fullProjectsQuery}
-                    setQuery={setProjectQuery}
-                    className={`dib w-40-l w-100 fl`}
-                  />
-                )} */}
       </section>
     </div>
+    </>
   );
 };
 
@@ -67,42 +93,17 @@ export const NotificationPageIndex = props => {
 };
 
 export const NotificationDetail = props => {
+  const [thisNotificationError, thisNotificationLoading, thisNotification] = useFetch(
+    `notifications/${props.id}/`,
+  );
 
-  const [thisNotificationError, thisNotificationLoading, thisNotification] = useFetch(`notifications/${props.id}/`);
-
-  /* Should we load the message again or use a context to communicate it? */
-  /* {left: '50%', '-webkit-transform': 'translateX(-50%)', 'transform': 'translateX(-50%)' */
-  /*  z-5 mt1 h-100 bg-white h4 ph2 mw5-l*/
+  /* Inside, this loads a NotificationBodyCard */
   return (
-    <>
-      <div style={{
-          'inset': '0px',
-          'background': 'rgba(0, 0, 0, 0.5) none repeat scroll 0% 0%',
-          'display': 'flex',
-          'z-index': '999'}}
-        onClick={() => props.navigate('../../')}
-       className="fixed ">
-        <div className={`relative shadow-3`} 
-          style={{
-            'background': 'rgb(255, 255, 255) none repeat scroll 0% 0%',
-            'width': '55%',
-            'margin': '5em auto auto',
-            'border': '1px solid rgb(187, 187, 187)',
-            'padding': '5px'}}>
-          <div className={`di fl tl pa3 mb3 w-100 fw5 bb b--tan`}>
-            Message
-            <Link className={`fr ml4`} to={`../../`}>
-              <CloseIcon className={`h1 w1`}/>
-            </Link>
-          </div>
-          <NotificationBodyCard loading={thisNotificationLoading} card={thisNotification}/>
-          {props.children}
-        </div>
-      </div>
-      {/* <div
-        onClick={() => props.navigate('../')}
-        className="absolute right-0 z-4 br w-100 h-100  h6"
-      ></div> */}
-    </>
+    <NotificationBodyModal
+      navigate={props.navigate}
+      thisNotificationError={thisNotificationError}
+      thisNotificationLoading={thisNotificationLoading}
+      thisNotification={thisNotification}
+      />
   );
 };

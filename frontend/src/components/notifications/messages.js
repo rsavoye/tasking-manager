@@ -36,4 +36,16 @@ export default defineMessages({
     id: 'notifications.nav.showing',
     defaultMessage: 'Showing {numProjects} notifications{numRange} of {numTotalProjects}',
   },
+  xNew: {
+    id: 'notifications.nav.xNew',
+    defaultMessage: '{xNew} New',
+  },
+  viewAll: {
+    id: 'notifications.nav.viewAll',
+    defaultMessage: 'View All',
+  },
+  noUnreadMessages: {
+    id: 'notifications.nav.noUnread',
+    defaultMessage: 'No unread messages',
+  },
 });

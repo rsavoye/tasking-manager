@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
-import { FormattedMessage, FormattedRelative } from 'react-intl';
+import { FormattedMessage, FormattedRelativeTime } from 'react-intl';
+import {selectUnit} from '@formatjs/intl-utils';
 import { Link } from '@reach/router';
 
 import DueDateBox from './dueDateBox';
@@ -32,19 +33,20 @@ export function ProjectTeaser({
 }: Object) {
   /* outerDivStyles must have f6 even if sub-divs have f7 to fix grid issues*/
   const outerDivStyles = 'f6 tl blue-grey truncate mb2';
+  const {value, unit} = selectUnit(lastUpdated);
 
   if (totalContributors < PROJECTCARD_CONTRIBUTION_SHOWN_THRESHOLD) {
     return (
-      <div className={`${outerDivStyles} ${className}`}>
+      <div title={lastUpdated} className={`${outerDivStyles} ${className || ''}`}>
         <span className={littleFont}>
           <FormattedMessage {...messages['projectLastContribution']} />{' '}
-          <FormattedRelative value={lastUpdated} />
+          <FormattedRelativeTime value={value} unit={unit}/>
         </span>
       </div>
     );
   } else {
     return (
-      <div className={`${outerDivStyles} ${className}`}>
+      <div title={lastUpdated} className={`${outerDivStyles} ${className || ''}`}>
         <span className={`${littleFont} blue-light`}>
           <FormattedMessage
             {...messages['projectTotalContributors']}

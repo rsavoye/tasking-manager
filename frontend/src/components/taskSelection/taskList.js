@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FormattedMessage, FormattedRelative } from 'react-intl';
+import { FormattedMessage, FormattedRelativeTime } from 'react-intl';
+import {selectUnit} from '@formatjs/intl-utils';
 import { useSelector } from 'react-redux';
 import ReactPlaceholder from 'react-placeholder';
 import { useQueryParam, NumberParam, StringParam } from 'use-query-params';
@@ -37,6 +38,7 @@ export function TaskStatus({ status }: Object) {
 }
 
 function TaskItem({ data, projectId, selectTask, selected = [] }: Object) {
+  const {value, unit} = selectUnit(data.actionDate);
   return (
     <div
       className={`cf db ba br1 mt2 ${
@@ -52,14 +54,14 @@ function TaskItem({ data, projectId, selectTask, selected = [] }: Object) {
             <FormattedMessage {...messages.taskId} values={{ id: data.taskId }} />
           </span>
           {data.actionDate && (
-            <div className="dn di-l">
+            <div title={data.actionDate} className="dn di-l">
               <span className="ph2 blue-grey">&#183;</span>
               <span className="blue-grey">
                 <FormattedMessage
                   {...messages.taskLastUpdate}
                   values={{ user: <span className="b blue-grey">{data.actionBy}</span> }}
                 />{' '}
-                <FormattedRelative value={data.actionDate} />
+                <FormattedRelativeTime value={value} unit={unit} />
               </span>
             </div>
           )}

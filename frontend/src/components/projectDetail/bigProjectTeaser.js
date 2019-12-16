@@ -1,5 +1,6 @@
 import React from 'react';
-import { FormattedMessage, FormattedRelative } from 'react-intl';
+import { FormattedMessage, FormattedRelativeTime } from 'react-intl';
+import {selectUnit} from '@formatjs/intl-utils';
 import messages from './messages';
 
 export function BigProjectTeaser({
@@ -11,10 +12,10 @@ export function BigProjectTeaser({
 }: Object) {
   /* outerDivStyles must have f6 even if sub-divs have f7 to fix grid issues*/
   const outerDivStyles = 'f6 tl blue-grey truncate mb2';
-
+  const {value, unit} = selectUnit(lastUpdated);
   return (
     <div className="cf">
-      <div className={`fl ${outerDivStyles} ${className}`}>
+      <div className={`fl ${outerDivStyles} ${className || ''}`}>
         <span className={`${littleFont} blue-light`}>
           <FormattedMessage
             {...messages['projectTotalContributors']}
@@ -24,10 +25,10 @@ export function BigProjectTeaser({
           />
         </span>
       </div>
-      <div className={`fr ${outerDivStyles} ${className}`}>
+      <div title={lastUpdated} className={`fr ${outerDivStyles} ${className || ''}`}>
         <span className={littleFont} title={lastUpdated}>
           <FormattedMessage {...messages['projectLastContribution']} />{' '}
-          <FormattedRelative value={lastUpdated} />
+          <FormattedRelativeTime value={value} unit={unit}/>
         </span>
       </div>
     </div>

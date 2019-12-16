@@ -12,6 +12,21 @@ const translatedMessages = {
   pt: pt,
 };
 
+/* Safari 12- and IE */
+if (!Intl.PluralRules) {
+  require('@formatjs/intl-pluralrules/polyfill');
+  require('@formatjs/intl-pluralrules/dist/locale-data/pt'); // Add locale data for de
+  require('@formatjs/intl-pluralrules/dist/locale-data/en'); 
+}
+
+/* Safari 13- and IE */
+if (!Intl.RelativeTimeFormat) {
+  require('@formatjs/intl-relativetimeformat/polyfill');
+  require('@formatjs/intl-relativetimeformat/dist/locale-data/pt'); // Add locale data for de
+  require('@formatjs/intl-relativetimeformat/dist/locale-data/en'); 
+}
+
+
 const supportedLocales = [{ label: 'English', value: 'en' }, { label: 'Português', value: 'pt' }];
 
 function getSupportedLocale(locale) {

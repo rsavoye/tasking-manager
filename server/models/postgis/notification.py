@@ -1,14 +1,8 @@
-from sqlalchemy import text
-
 from server import db
 from flask import current_app
-from enum import Enum
 from server.models.dtos.message_dto import NotificationDTO
 from server.models.postgis.user import User
-from server.models.postgis.task import Task
-from server.models.postgis.project import Project
 from server.models.postgis.utils import timestamp
-from server.models.postgis.utils import NotFound
 
 
 class Notification(db.Model):

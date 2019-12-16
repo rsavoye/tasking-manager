@@ -1,14 +1,4 @@
-import re
-import time
 import datetime
-
-from cachetools import TTLCache, cached
-from typing import List
-from flask import current_app
-from sqlalchemy import text, func
-
-from server import create_app, db
-from server.models.dtos.notification_dto import NotificationDTO
 from server.models.postgis.notification import Notification
 
 

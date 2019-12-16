@@ -20,7 +20,7 @@ import { setLocale } from '../../store/actions/userPreferences';
 import { createLoginWindow } from '../../utils/login';
 import { supportedLocales } from '../../utils/internationalization';
 import { BellIcon } from '../svgIcons';
-import { useFetchIntervaled } from '../../hooks/UseFetch';
+import { useFetch, useFetchIntervaled } from '../../hooks/UseFetch';
 
 function getMenuItensForUser(userDetails) {
   const menuItems = [
@@ -56,7 +56,10 @@ const UserDisplay = props => {
 };
 
 const NotificationBellLink = props => {
-  const [unreadNotifsError, unreadNotifs] = useFetchIntervaled(
+  const [unreadNotifsStartError, unreadNotifsStartLoading, unreadNotifsStart] = useFetch(
+    `/api/v2/notifications/queries/myself/count-unread/`,
+  );
+  const [unreadNotifsRepeatError, unreadNotifsRepeat] = useFetchIntervaled(
     `/api/v2/notifications/queries/myself/count-unread/`,
     30000,
   );
@@ -65,7 +68,15 @@ const NotificationBellLink = props => {
       ? { className: `link barlow-condensed blue-dark f4 ttu bb b--blue-dark bw1 pv2` }
       : { className: `link barlow-condensed blue-dark f4 ttu` };
   };
-  const lightTheBell = !unreadNotifsError && unreadNotifs && unreadNotifs.newMessages;
+  //eslint-disable-next-line
+  const lightTheBell = (!unreadNotifsStartLoading &&
+      !unreadNotifsStartError && unreadNotifsStart && 
+      unreadNotifsStart.newMessages ) ||
+    (!unreadNotifsRepeatError && unreadNotifsRepeat &&
+      unreadNotifsRepeat.newMessages) ;
+
+  console.log("unread notif bell:",unreadNotifsRepeatError, unreadNotifsRepeat, unreadNotifsStart);
+
     return (
       <TopNavLink to={'inbox/'} isActive={isNotificationBellActive} >
       <div className="relative dib">
@@ -78,18 +89,19 @@ const NotificationBellLink = props => {
 
 const AuthButtons = props => {
   const { logInStyle, signUpStyle, redirectTo } = props;
+
   return (
     <>
       <Button onClick={() => createLoginWindow(redirectTo)} className={logInStyle}>
-        <FormattedMessage {...messages.logIn} />
+        <FormattedMessage {...messages.logIn}/>
       </Button>
       <Popup
         contentStyle={modalStyle}
-        trigger={
-          <Button className={signUpStyle}>
+       trigger={
+         <Button className={signUpStyle}>
             <FormattedMessage {...messages.signUp} />
-          </Button>
-        }
+         </Button>
+         }
         modal
         closeOnDocumentClick
       >
@@ -98,6 +110,55 @@ const AuthButtons = props => {
     </>
   );
 };
+
+const PopupItems = props => {
+  return (
+    <div className="v-mid tc">
+      {props.userDetails.username &&
+        props.menuItems
+          .filter(item => item.authenticated === true)
+          .map((item, n) => (
+            <p key={n}>
+              <Link to={item.link} className={props.linkCombo}>
+                <FormattedMessage {...item.label} />
+              </Link>
+            </p>
+          ))}
+      {props.userDetails.username && (
+        <>
+          <p>
+            <Link to={'/settings'} className={props.linkCombo}>
+              <FormattedMessage {...messages.settings} />
+            </Link>
+          </p>
+          <p className="bb b--grey-light"></p>
+        </>
+      )}
+      {props.menuItems
+        .filter(item => item.authenticated === false || item.showAlways)
+        .map((item, n) => (
+          <p key={n}>
+            <Link to={item.link} className={props.linkCombo}>
+              <FormattedMessage {...item.label} />
+            </Link>
+          </p>
+        ))}
+      {props.userDetails.username ? (
+        <Button className="bg-blue-dark white" onClick={() => props.logout()}>
+          <FormattedMessage {...messages.logout} />
+        </Button>
+      ) : (
+        <div>
+          <AuthButtons
+            logInStyle="bg-red white"
+            signUpStyle="bg-blue-dark white mh1 mv2 dib"
+            redirectTo={props.location.pathname}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 class Header extends React.Component {
   linkCombo = 'link mh3 barlow-condensed blue-dark f4 ttu';
@@ -127,56 +188,6 @@ class Header extends React.Component {
           </TopNavLink>
         ))}
 
-      </div>
-    );
-  }
-
-  renderPopupItems() {
-    return (
-      <div className="v-mid tc">
-        {getMenuItensForUser(this.props.userDetails)
-          .filter(item => item.authenticated === true)
-          .map((item, n) => (
-            <p key={n}>
-              <Link to={item.link} className={this.linkCombo}>
-                <FormattedMessage {...item.label} />
-              </Link>
-            </p>
-          ))
-        }
-        {this.props.userDetails.username && (
-          <>
-            <p>
-              <Link to={'/settings'} className={this.linkCombo}>
-                <FormattedMessage {...messages.settings} />
-              </Link>
-            </p>
-            <p className="bb b--grey-light"></p>
-          </>
-        )}
-        {getMenuItensForUser(this.props.userDetails)
-          .filter(item => item.authenticated === false || item.showAlways)
-          .map((item, n) => (
-            <p key={n}>
-              <Link to={item.link} className={this.linkCombo}>
-                <FormattedMessage {...item.label} />
-              </Link>
-            </p>
-          ))
-        }
-        {this.props.userDetails.username ? (
-          <Button className="bg-blue-dark white" onClick={() => this.props.logout()}>
-            <FormattedMessage {...messages.logout} />
-          </Button>
-        ) : (
-          <div>
-            <AuthButtons
-              logInStyle="bg-red white"
-              signUpStyle="bg-blue-dark white mh1 mv2 dib"
-              redirectTo={this.props.location.pathname}
-            />
-          </div>
-        )}
       </div>
     );
   }
@@ -304,8 +315,16 @@ class Header extends React.Component {
           <div className="fr dib tr mb1">
             {this.renderAuthenticationButtons()}
             <div className="dib v-mid dn-l">
-              <Popup trigger={open => <BurgerMenu open={open} />} modal closeOnDocumentClick>
-                <div>{this.renderPopupItems()}</div>
+              <Popup  trigger={open => <BurgerMenu open={open}/>} modal closeOnDocumentClick>
+                <div>
+                  <PopupItems
+                 userDetails={this.props.userDetails}
+                 menuItems={this.menuItems}
+                 linkCombo={this.linkCombo}
+                 logout={this.logout}
+                 location={this.props.location}
+                 />
+               </div> 
               </Popup>
             </div>
           </div>

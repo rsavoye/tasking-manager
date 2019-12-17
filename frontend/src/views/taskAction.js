@@ -32,7 +32,6 @@ export function TaskAction({ project, action }: Object) {
       if (userDetails.id && token && action) {
         fetchLocalJSONAPI(`users/${userDetails.id}/tasks/?status=LOCKED_FOR_${action}`, token).then(
           res => {
-            console.log(res);
             setTasks(res.tasks);
             setLoading(false);
           }

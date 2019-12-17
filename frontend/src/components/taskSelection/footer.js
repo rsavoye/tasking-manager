@@ -11,39 +11,39 @@ import { Button } from '../button';
 import { Imagery } from './imagery';
 import { MappingTypes } from '../mappingTypes';
 
-export function ContributeButton({ action, projectId, selectedTasks, activities }: Object) {
+export function ContributeButton({ action, projectId, selectedTasks, activities, editor }: Object) {
   const token = useSelector(state => state.auth.get('token'));
   const dispatch = useDispatch();
 
   const updateReduxState = (tasks, project, status) => {
-    dispatch({type: 'SET_LOCKED_TASKS', tasks: tasks});
-    dispatch({type: 'SET_PROJECT', project: project});
-    dispatch({type: 'SET_TASKS_STATUS', status: status});
-  }
+    dispatch({ type: 'SET_LOCKED_TASKS', tasks: tasks });
+    dispatch({ type: 'SET_PROJECT', project: project });
+    dispatch({ type: 'SET_TASKS_STATUS', status: status });
+  };
   const lockTasks = () => {
     if (action.startsWith('validate')) {
       pushToLocalJSONAPI(
         `/api/v2/projects/${projectId}/tasks/actions/lock-for-validation/`,
-        JSON.stringify({taskIds: selectedTasks}),
-        token
-      ).then(
-        res => {
+        JSON.stringify({ taskIds: selectedTasks }),
+        token,
+      )
+        .then(res => {
           updateReduxState(selectedTasks, projectId, 'LOCKED_FOR_VALIDATION');
-          navigate(`/projects/${projectId}/validate/`);
-        }
-      ).catch(e => console.log(e));
+          navigate(`/projects/${projectId}/validate/?editor=${editor}`);
+        })
+        .catch(e => console.log(e));
     }
     if (action.startsWith('map')) {
       fetchLocalJSONAPI(
         `/api/v2/projects/${projectId}/tasks/actions/lock-for-mapping/${selectedTasks[0]}/`,
         token,
-        'POST'
-      ).then(
-        res => {
+        'POST',
+      )
+        .then(res => {
           updateReduxState(selectedTasks, projectId, 'LOCKED_FOR_MAPPING');
-          navigate(`/projects/${projectId}/map/`);
-        }
-      ).catch(e => console.log(e));
+          navigate(`/projects/${projectId}/map/?editor=${editor}`);
+        })
+        .catch(e => console.log(e));
     }
   };
 
@@ -103,7 +103,12 @@ export const TaskSelectionFooter = props => {
       <div className="w-30-ns w-60 fl tr">
         <div className="mt3">
           {/* type value will be changed soon */}
-          <ContributeButton action={props.taskAction} selectedTasks={props.selectedTasks} projectId={props.projectId} />
+          <ContributeButton
+            action={props.taskAction}
+            selectedTasks={props.selectedTasks}
+            projectId={props.projectId}
+            editor={editor}
+          />
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ import { ProjectInstructions } from './instructions';
 import { HeaderLine } from './index';
 import { TasksMap } from './map';
 import { Button } from '../button';
+import { Editor } from '../editor';
 import DueDateBox from '../projectcard/dueDateBox';
 import { CheckIcon, CloseIcon } from '../svgIcons';
 import { pushToLocalJSONAPI, fetchLocalJSONAPI } from '../../network/genericJSONRequest';
@@ -20,19 +21,23 @@ export function TaskMapAction({ project, tasks, action, editor }) {
   return (
     <div className="cf vh-minus-122-ns overflow-y-hidden">
       <div className="w-70 fl h-100 relative">
-        <ReactPlaceholder
-          showLoadingAnimation={true}
-          type="media"
-          rows={26}
-          delay={10}
-          ready={tasks && tasks.features && tasks.features.length}
-        >
-          <TasksMap
-            mapResults={tasks}
-            className="dib w-100 fl h-100-ns vh-75"
-            taskBordersOnly={false}
-          />
-        </ReactPlaceholder>
+        {editor === 'iD Editor' ? (
+            <Editor />
+        ) : (
+          <ReactPlaceholder
+            showLoadingAnimation={true}
+            type="media"
+            rows={26}
+            delay={10}
+            ready={tasks && tasks.features && tasks.features.length}
+          >
+            <TasksMap
+              mapResults={tasks}
+              className="dib w-100 fl h-100-ns vh-75"
+              taskBordersOnly={false}
+            />
+          </ReactPlaceholder>
+        )}
       </div>
       <div className="w-30 fr pt3 ph3 h-100 overflow-y-scroll">
         <ReactPlaceholder
@@ -45,8 +50,8 @@ export function TaskMapAction({ project, tasks, action, editor }) {
             <h3 className="f2 fw6 mt2 mb3 ttu barlow-condensed blue-dark">
               {project.projectInfo && project.projectInfo.name}
               <span className="pl2">&#183;</span>
-              {tasksIds.map(task => (
-                <span className="red ph2">{`#${task}`}</span>
+              {tasksIds.map((task, n) => (
+                <span key={n} className="red ph2">{`#${task}`}</span>
               ))}
             </h3>
             <div>

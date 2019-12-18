@@ -216,10 +216,10 @@ class NotificationsQueriesCountUnreadAPI(Resource):
                 description: Internal Server Error
         """
         try:
-            unread_messages = MessageService.has_user_new_messages(
+            unread_count = MessageService.has_user_new_messages(
                 tm.authenticated_user_id
             )
-            return unread_messages, 200
+            return unread_count, 200
         except Exception as e:
             error_msg = f"User GET - unhandled error: {str(e)}"
             current_app.logger.critical(error_msg)

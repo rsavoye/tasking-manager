@@ -11,6 +11,7 @@ from server import create_app, db
 from server.models.dtos.message_dto import MessageDTO, MessagesDTO
 from server.models.dtos.stats_dto import Pagination
 from server.models.postgis.message import Message, MessageType, NotFound
+from server.models.postgis.notification import Notification
 from server.models.postgis.project_info import ProjectInfo
 from server.models.postgis.task import TaskStatus
 from server.services.messaging.smtp_service import SMTPService
@@ -377,7 +378,7 @@ class MessageService:
     @cached(message_cache)
     def has_user_new_messages(user_id: int) -> dict:
         """ Determines if the user has any unread messages """
-        count = Message.get_unread_message_count(user_id)
+        count = Notification.get_unread_message_count(user_id)
 
         new_messages = False
         if count > 0:

@@ -1,4 +1,5 @@
 from sqlalchemy import text
+from sqlalchemy.sql.expression import false
 
 from server import db
 from flask import current_app
@@ -122,7 +123,7 @@ class Message(db.Model):
     def get_unread_message_count(user_id: int):
         """ Get count of unread messages for user """
         return Message.query.filter(
-            Message.to_user_id == user_id, Message.read is False
+            Message.to_user_id == user_id, Message.read == false()
         ).count()
 
     @staticmethod

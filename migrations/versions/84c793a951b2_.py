@@ -7,6 +7,7 @@ Create Date: 2019-11-12 20:04:46.065237
 """
 from alembic import op
 import sqlalchemy as sa
+from datetime import datetime
 
 
 # revision identifiers, used by Alembic.
@@ -17,6 +18,7 @@ depends_on = None
 
 
 def upgrade():
+    conn = op.get_bind()
     op.create_table(
         "notifications",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -29,6 +31,22 @@ def upgrade():
     op.create_index(
         "idx_notifications_user_id", "notifications", ["user_id"], unique=False
     )
+    fetch_all_unread_counts = "select to_user_id, count(*) from messages where read = false group by to_user_id;"
+    unread_counts = conn.execute(fetch_all_unread_counts)
+    for unread_count in unread_counts:
+        user_id = unread_count[0]
+        user_unread_count = unread_count[1]
+        update_notification_info = (
+            "insert into notifications (user_id,unread_count,date) values ("
+            + str(user_id)
+            + ","
+            + str(user_unread_count)
+            + ",'"
+            + str(datetime.now())
+            + "');"
+        )
+
+        op.execute(update_notification_info)
 
 
 def downgrade():

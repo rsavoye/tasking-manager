@@ -272,7 +272,7 @@ workflows:
         filters:
           branches:
             only:
-              - teachosm
+              - deployment/teachosm-tasking-manager
         requires:
           - build
         stack_name: "teachosm"

@@ -41,16 +41,23 @@ class ProjectChat(db.Model):
     def get_messages(project_id: int, page: int) -> ProjectChatDTO:
         """ Get all messages on the project """
 
+        from server.services.project_service import ProjectService
+
+        # just to find if it exists
+        if not ProjectService.exists(project_id):
+            raise NotFound()
+
         project_messages = (
             ProjectChat.query.filter_by(project_id=project_id)
             .order_by(ProjectChat.time_stamp.desc())
             .paginate(page, 50, True)
         )
 
-        if project_messages.total == 0:
-            raise NotFound()
-
         dto = ProjectChatDTO()
+
+        if project_messages.total == 0:
+            return dto
+
         for message in project_messages.items:
             chat_dto = ChatMessageDTO()
             chat_dto.message = message.message

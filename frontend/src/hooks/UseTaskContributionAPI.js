@@ -8,6 +8,7 @@ import {
 import { CommaArrayParam } from '../utils/CommaArrayParam';
 import { useSelector } from 'react-redux';
 import { useThrottle } from '../hooks/UseThrottle';
+import { remapParamsToAPI } from '../utils/remapParamsToAPI'
 
 /* See also moreFiltersForm, the useQueryParams are duplicated there for specific modular usage */
 /* This one is e.g. used for updating the URL when returning to /contribute
@@ -36,15 +37,14 @@ export const useTaskContributionQueryParams = () => {
 /* The API uses slightly different JSON keys than the queryParams,
    this fn takes an object with queryparam keys and outputs JSON keys 
    while maintaining the same values */
-const remapParamsToAPI = param => {
-  /* TODO backend–add pagination: 
+/* TODO backend–add pagination: 
   orderByType: 'sortBy',
   orderBy: 'sortDirection',
   page: 'page',
   pageSize: 'pageSize'
   */ 
    /* TODO support full text search and change text=>project for that */
-  const conversion = {
+  const backendToQueryConversion = {
     status: 'status',
     minDate: 'min_action_date',
     text: 'project_id',
@@ -52,19 +52,6 @@ const remapParamsToAPI = param => {
     archivedProjects: 'archived_projects',
   };
 
-  function mapObject(obj, fn) {
-    return Object.fromEntries(Object.entries(obj).map(fn));
-  }
-  const remapped = mapObject(param, n => {
-    /* fn operates on a array with [key, value] format */
-
-    /* mappingTypes's value needs to be converted to comma delimited again */
-    const value = Array.isArray(n[1]) ? n[1].join(',') : n[1];
-
-    return [conversion[n[0]] || n[0], value];
-  });
-  return remapped;
-};
 
 const dataFetchReducer = (state, action) => {
   switch (action.type) {
@@ -142,10 +129,11 @@ export const useTaskContributionAPI = (
           dispatch({type:'FETCH_MISSINGUSER'});
           didCancel=true;
         }
+        const remappedParams = remapParamsToAPI(throttledExternalQueryParamsState, backendToQueryConversion);
         const result = await axios({
           url: `${API_URL}users/${user_id}/tasks/`,
           method: 'get',
-          params: remapParamsToAPI(throttledExternalQueryParamsState),
+          params: remappedParams,
           headers: { Authorization: `Token ${token}` },
           cancelToken: new CancelToken(function executor(c) {
             // An executor function receives a cancel function as a parameter

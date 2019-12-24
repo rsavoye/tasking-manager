@@ -18,6 +18,7 @@ import { useEffect, useReducer } from 'react';
 import axios from 'axios';
 
 import { API_URL } from '../config';
+import { remapParamsToAPI } from '../utils/remapParamsToAPI'
 
 const projectQueryAllSpecification = {
   difficulty: StringParam,
@@ -32,7 +33,7 @@ const projectQueryAllSpecification = {
   createdByMe: BooleanParam,
   favoritedByMe: BooleanParam,
   contributedToByMe: BooleanParam,
-  createdByMeArchived: BooleanParam
+  createdByMeArchived: BooleanParam,
 };
 
 /* This can be passed into project API or used independently */
@@ -42,35 +43,22 @@ export const useExploreProjectsQueryParams = () => {
 
 /* The API uses slightly different JSON keys than the queryParams,
    this fn takes an object with queryparam keys and outputs JSON keys
-   while maintaining the same values */
-const remapParamsToAPI = param => {
-  const conversion = {
-    difficulty: 'mapperLevel',
-    campaign: 'campaignTag',
-    organisation: 'organisationName',
-    location: 'country',
-    types: 'mappingTypes',
-    text: 'textSearch',
-    page: 'page',
-    orderBy: 'orderBy',
-    orderByType: 'orderByType',
-    createdByMe: 'createdByMe',
-    favoritedByMe: 'favoritedByMe',
-    contributedToByMe: 'contributedToByMe',
-    createdByMeArchived: 'createdByMeArchived'
-  };
-  function mapObject(obj, fn) {
-    return Object.fromEntries(Object.entries(obj).map(fn));
-  }
-  const remapped = mapObject(param, n => {
-    /* fn operates on a array with [key, value] format */
-
-    /* mappingTypes's value needs to be converted to comma delimited again */
-    const value = Array.isArray(n[1]) ? n[1].join(',') : n[1];
-
-    return [conversion[n[0]] || n[0], value];
-  });
-  return remapped;
+   while maintaining the same values 
+   left is client, right is backend*/
+const backendToQueryConversion = {
+  difficulty: 'mapperLevel',
+  campaign: 'campaignTag',
+  organisation: 'organisationName',
+  location: 'country',
+  types: 'mappingTypes',
+  text: 'textSearch',
+  page: 'page',
+  orderBy: 'orderBy',
+  orderByType: 'orderByType',
+  createdByMe: 'createdByMe',
+  favoritedByMe: 'favoritedByMe',
+  contributedToByMe: 'contributedToByMe',
+  createdByMeArchived: 'createdByMeArchived',
 };
 
 const dataFetchReducer = (state, action) => {
@@ -140,32 +128,23 @@ export const useProjectsQueryAPI = (
         type: 'FETCH_INIT',
       });
 
-
       const headers = token ? { Authorization: `Token ${token}` } : {};
+      const paramsRemapped = remapParamsToAPI(
+        throttledExternalQueryParamsState,
+        backendToQueryConversion,
+      );
 
       try {
         const result = await axios({
           url: `${API_URL}projects/`,
           method: 'get',
-          params: remapParamsToAPI(throttledExternalQueryParamsState),
           headers: headers,
+          params: paramsRemapped,
           cancelToken: new CancelToken(function executor(c) {
             // An executor function receives a cancel function as a parameter
             cancel = { end: c, params: throttledExternalQueryParamsState };
           }),
         });
-
-         const meh= {
-          url: `${API_URL}projects/`,
-          method: 'get',
-          params: remapParamsToAPI(throttledExternalQueryParamsState),
-          ...headers,
-          cancelToken: new CancelToken(function executor(c) {
-            // An executor function receives a cancel function as a parameter
-            cancel = { end: c, params: throttledExternalQueryParamsState };
-          }),
-        }
-        console.log(meh)
 
         if (!didCancel) {
           if (result && result.headers && result.headers['content-type'].indexOf('json') !== -1) {
@@ -175,7 +154,7 @@ export const useProjectsQueryAPI = (
             dispatch({ type: 'FETCH_FAILURE' });
           }
         } else {
-          cancel.end();
+          cancel && cancel.end();
         }
       } catch (error) {
         /* if cancelled, this setting state of unmounted
@@ -212,8 +191,8 @@ export const useProjectsQueryAPI = (
         } else if (!didCancel) {
           dispatch({ type: 'FETCH_FAILURE' });
         } else {
-          // console.log("tried to cancel on failure",cancel.params);
-          cancel.end();
+          console.log('tried to cancel on failure', cancel && cancel.params);
+          cancel && cancel.end();
         }
       }
     };
@@ -221,8 +200,8 @@ export const useProjectsQueryAPI = (
     fetchData();
     return () => {
       didCancel = true;
-      // console.log("tried to cancel on effect cleanup ",cancel.params)
-      cancel.end();
+      console.log('tried to cancel on effect cleanup ', cancel && cancel.params);
+      cancel && cancel.end();
     };
   }, [throttledExternalQueryParamsState, forceUpdate, token]);
 

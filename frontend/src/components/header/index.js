@@ -18,9 +18,8 @@ import { CurrentUserAvatar } from '../user/avatar';
 import { logout } from '../../store/actions/auth';
 import { setLocale } from '../../store/actions/userPreferences';
 import { createLoginWindow } from '../../utils/login';
+import { NotificationBell } from './notificationBell';
 import { supportedLocales } from '../../utils/internationalization';
-import { BellIcon } from '../svgIcons';
-import { useFetch, useFetchIntervaled } from '../../hooks/UseFetch';
 
 function getMenuItensForUser(userDetails) {
   const menuItems = [
@@ -54,38 +53,6 @@ const UserDisplay = props => {
     </span>
   );
 };
-
-const NotificationBellLink = props => {
-  const [unreadNotifsStartError, unreadNotifsStartLoading, unreadNotifsStart] = useFetch(
-    `/api/v2/notifications/queries/myself/count-unread/`,
-  );
-  const [unreadNotifsRepeatError, unreadNotifsRepeat] = useFetchIntervaled(
-    `/api/v2/notifications/queries/myself/count-unread/`,
-    30000,
-  );
-  const isNotificationBellActive = ({ isCurrent }) => {
-    return isCurrent
-      ? { className: `link barlow-condensed blue-dark f4 ttu bb b--blue-dark bw1 pv2` }
-      : { className: `link barlow-condensed blue-dark f4 ttu` };
-  };
-  //eslint-disable-next-line
-  const lightTheBell = (!unreadNotifsStartLoading &&
-      !unreadNotifsStartError && unreadNotifsStart && 
-      unreadNotifsStart.newMessages ) ||
-    (!unreadNotifsRepeatError && unreadNotifsRepeat &&
-      unreadNotifsRepeat.newMessages) ;
-
-  console.log("unread notif bell:",unreadNotifsRepeatError, unreadNotifsRepeat, unreadNotifsStart);
-
-    return (
-      <TopNavLink to={'inbox/'} isActive={isNotificationBellActive} >
-      <div className="relative dib">
-        <BellIcon />
-        {lightTheBell && <div className="redicon"></div>}
-      </div>
-    </TopNavLink>
-    )
-}
 
 const AuthButtons = props => {
   const { logInStyle, signUpStyle, redirectTo } = props;
@@ -247,7 +214,7 @@ class Header extends React.Component {
     
     return this.props.userDetails.username ? (
       <>
-        <NotificationBellLink />
+        <NotificationBell />
         <Dropdown
           onAdd={() => {}}
           onRemove={() => {}}

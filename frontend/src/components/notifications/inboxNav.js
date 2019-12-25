@@ -5,9 +5,8 @@ import { FormattedMessage } from 'react-intl';
 import messages from './messages';
 import { useInboxQueryParams, stringify } from '../../hooks/UseInboxQueryAPI';
 
-/*REMOVE ME*/
 import { ProjectSearchBox } from '../projects/projectSearchBox';
-import { useExploreProjectsQueryParams } from '../../hooks/UseProjectsQueryAPI';
+import { NotificationOrderBySelector } from './notificationOrderBy';
 
 const isActiveButton = (buttonName, projectQuery) => {
   const allBoolean = projectQuery.types === undefined;
@@ -31,10 +30,15 @@ export const InboxNavMini = props => {
             <FormattedMessage {...messages.notifications} />
           </h3>
           {props.newMsgCount > 0 && (
-           <Link to="/inbox">
-            <div className="dib fr br2 core-font b--white ba bg-red grey-light f7 mv3 pa2">
-              <FormattedMessage {...messages.xNew} values={{ xNew: props.newMsgCount || 0 }} />
-            </div>
+            <Link
+              to="/inbox?orderBy=read&orderByType=DESC"
+              onClick={e => {
+                props.setPopoutFocus(false);
+              }}
+            >
+              <div className="dib fr br2 core-font b--white ba bg-red grey-light f7 mv3 pa2">
+                <FormattedMessage {...messages.xNew} values={{ xNew: props.newMsgCount || 0 }} />
+              </div>
             </Link>
           )}
         </div>
@@ -45,10 +49,13 @@ export const InboxNavMini = props => {
 export const InboxNavMiniBottom = props => {
   return (
     /* mb1 mb2-ns (removed for map, but now small gap for more-filters) */
-    <footer className="relative h2 w-100">
+    <footer className={`relative h2 w-100 ${props.className || ''}`}>
       <Link
         className="absolute hover-darken tc pv2 w-100 b--grey-light ba bg-red white f6 no-underline"
         to="/inbox"
+        onClick={e => {
+          props.setPopoutFocus(false);
+        }}
       >
         <FormattedMessage {...messages.viewAll} />
       </Link>
@@ -57,17 +64,15 @@ export const InboxNavMiniBottom = props => {
 };
 
 export const InboxNav = props => {
-  const [fullProjectsQuery] = useExploreProjectsQueryParams();
   const [inboxQuery, setInboxQuery] = useInboxQueryParams();
 
   const linkCombo = 'link ph3 f6 pv2 ba b--grey-light';
   const notAnyFilter = !stringify(inboxQuery);
   return (
-    /* mb1 mb2-ns (removed for map, but now small gap for more-filters) */
     <header className=" w-100 ">
       <div className="cf">
         <div className="w-75-l w-60 fl">
-          <h3 className="f2 ttu barlow-condensed fw8">
+          <h3 className="pl3 f2 ttu barlow-condensed fw8">
             <FormattedMessage {...messages.notifications} />
           </h3>
         </div>
@@ -80,14 +85,18 @@ export const InboxNav = props => {
             <ProjectSearchBox
               className="dib fl mh1"
               setQuery={setInboxQuery}
-              fullProjectsQuery={fullProjectsQuery}
-              placeholder="Search (localize)"
+              fullProjectsQuery={inboxQuery}
+              placeholder="Search Project ID (localize)"
             />
-
+            <NotificationOrderBySelector
+              className={`fl mt1 mt2-ns`}
+              setQuery={setInboxQuery}
+              allQueryParams={inboxQuery}
+            />
             {!notAnyFilter && (
               <Link
                 to="./"
-                className={`red link ph3 f6 pv2 mh1 fr
+                className={`red link ph3 f6 pv2 mh1 mv1 fr
                     `}
               >
                 <FormattedMessage {...messages.clearFilters} />
@@ -95,6 +104,7 @@ export const InboxNav = props => {
             )}
           </div>
         </div>
+
         <div className="w-10-ns w-100 fr">{/* <ShowMapToggle /> */}</div>
       </div>
       <div className="ma2">
@@ -106,7 +116,10 @@ export const InboxNav = props => {
         </Link>
         <Link
           to="?orderBy=date&orderByType=desc&page=1&pageSize=10&types=3,1,6,7"
-          className={`di di-m mh1 ${isActiveButton(['3', '1', '6', '7'], inboxQuery)}  ${linkCombo}`}
+          className={`di di-m mh1 ${isActiveButton(
+            ['3', '1', '6', '7'],
+            inboxQuery,
+          )}  ${linkCombo}`}
         >
           <FormattedMessage {...messages.messages} />
         </Link>

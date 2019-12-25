@@ -19,10 +19,10 @@ export const UserAvatar = ({name, username, picture, size, colorClasses, removeF
   let textPadding = editMode ? {top: "-0.75rem"} : {paddingTop: "0.375rem"};
   let sizeStyles = {}; 
   let closeIconStyle = {left: "0.4rem"};
-  /* only trigger loading user profile if picture prop is undefined */
+  /* only trigger loading user profile if picture prop is null */
   const [pictureLookupError, pictureLookupLoading, pictureLookup] = useFetch(
     `users/queries/${username}/`,
-    picture === undefined,
+    picture === null,
   );
    
   if(size === 'large') {

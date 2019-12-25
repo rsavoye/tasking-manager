@@ -1,18 +1,19 @@
 import React from 'react';
 import { Link } from '@reach/router';
 import DOMPurify from 'dompurify';
-import { EyeIcon, WasteIcon, ListIcon } from '../svgIcons';
+import { EyeIcon, ListIcon } from '../svgIcons';
 import { UserAvatar } from '../user/avatar';
 import systemAvatar from '../../assets/img/hot-system-avatar-square-opaque.png';
 // import { FormattedRelativeTime } from 'react-intl';
 // import {selectUnit} from '@formatjs/intl-utils';
-import {FormattedRelative} from 'react-intl';
+import { FormattedRelative } from 'react-intl';
+import { DeleteModal } from '../deleteModal';
 
-
-const rawHtmlNotification = notificationHtml => ({
+export const rawHtmlNotification = notificationHtml => ({
   __html: DOMPurify.sanitize(notificationHtml),
 });
-
+export const stripHtmlToText = notificationHtml =>
+  DOMPurify.sanitize(notificationHtml, { ALLOWED_TAGS: [] });
 
 const ReadLink = props => (
   <Link to={`/inbox/message/${props.messageId}/read`} className={`hover-red blue-dark`}>
@@ -21,7 +22,7 @@ const ReadLink = props => (
 );
 
 const ListLink = props => (
-  <Link to={`/inbox/message/${props.projectId}/list`} className={`hover-red blue-dark`}>
+  <Link to={`/inbox/message/${props.messageId}/list`} className={`hover-red blue-dark`}>
     <ListIcon className={`fr dn dib-ns h1 w1 pr1 pr3-l mv1 pv1`} />
   </Link>
 );
@@ -32,13 +33,18 @@ export const MessageAvatar = ({ messageType, fromUsername, size }: Object) => {
   const checkIsSystem = typesThatUseSystemAvatar.indexOf(messageType) !== -1;
 
   if (!fromUsername && !checkIsSystem) {
-    return (<div>&nbsp;</div>);
+    return <div>&nbsp;</div>;
   }
 
   return (
     <>
-      {fromUsername ? (
-        <UserAvatar username={fromUsername} colorClasses="white bg-blue-grey" size={size} />
+      {fromUsername /*picture={null} does a fetch user profile to get pic url */ ? (
+        <UserAvatar
+          username={fromUsername}
+          picture={null}
+          colorClasses="white bg-blue-grey"
+          size={size}
+        />
       ) : (
         checkIsSystem && (
           <UserAvatar
@@ -61,7 +67,6 @@ export function NotificationCard({
   read,
   sentDate,
 }: Object) {
-
   const readOrListLink =
     messageType && typesThatAreMessages.indexOf(messageType) === -1 ? (
       <ListLink messageId={messageId} />
@@ -74,23 +79,38 @@ export function NotificationCard({
 
   return (
     <Link to={`/inbox/message/${messageId}`} className={`no-underline `}>
-      <article className={`db base-font w-75-m w-100 mb3 mh2 blue-dark mw8 ${readStyle}`}>
+      <article className={`db base-font bg-white w-100 mb1 mh2 blue-dark mw8 ${readStyle}`}>
         <div className="pv3 pr3 ba br1 b--grey-light">
-
           <div className={`fl dib w2 h3 mh3`}>
-            <MessageAvatar messageType={messageType} fromUsername={fromUsername} size={'medium'} /> 
+            <MessageAvatar messageType={messageType} fromUsername={fromUsername} size={'medium'} />
           </div>
 
-          <strong 
+          <strong
             className={`messageSubjectLinks`}
-            dangerouslySetInnerHTML={rawHtmlNotification(subject)}></strong>
+            dangerouslySetInnerHTML={rawHtmlNotification(subject)}
+          ></strong>
 
-          <Link to={`/inbox/message/${messageId}/delete`} className={`hover-red blue-dark`}>
-            <WasteIcon className={`fr h1 w1 mv1 pv1 pr3`} />
-          </Link>
-
-          <div className={`fr-l di-l dn f7 truncate w4 pa1 ma1`} title={messageType}>
-            {messageType}
+          <div
+            className={`dib fr`}
+            onClick={e => {
+              e.persist();
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            {' '}
+            <DeleteModal
+              className={`fr bg-transparent bw0 w2 h2 lh-copy overflow-hidden `}
+              id={messageId}
+              name={"'" + stripHtmlToText(subject) + "'"}
+              type="notifications"
+            />
+          </div>
+          <div
+            className={`fr-l di-l dn f7 truncate ttc w4 pa1 ma1`}
+            title={messageType.toLowerCase().replace(/_/g, ' ')}
+          >
+            {messageType.toLowerCase().replace(/_/g, ' ')}
           </div>
 
           {readOrListLink}
@@ -129,8 +149,8 @@ export function NotificationCardMini({
           ></div>
           <div className={`pl2 blue-grey f7`}>
             {/* <FormattedRelativeTime value={value} unit={unit}/> */}
-            <FormattedRelative value={new Date(sentDate)} />
-          </div> 
+            <FormattedRelative value={new Date(sentDate + '+00:00')} />
+          </div>
         </div>
       </article>
     </Link>

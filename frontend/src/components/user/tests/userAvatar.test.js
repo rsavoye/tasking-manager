@@ -30,7 +30,7 @@ it('UserAvatar with picture url and large size', () => {
 
 it('UserAvatar without picture url and with large size', () => {
   const element = TestRenderer.create(<Provider store={store}>
-      <UserAvatar username={'Mary'} picture={null} size="large" colorClasses="white bg-red"/>
+      <UserAvatar username={'Mary'} size="large" colorClasses="white bg-red"/>
     </Provider>
   );
   const elementInstance = element.root;
@@ -43,7 +43,7 @@ it('UserAvatar without picture url and with large size', () => {
 
 it('UserAvatar with name with default size', () => {
   const element = TestRenderer.create(<Provider store={store}>
-      <UserAvatar username={'Mary'} name={'Mary Poppins'} picture={null} colorClasses="white bg-red"/>
+      <UserAvatar username={'Mary'} name={'Mary Poppins'} colorClasses="white bg-red"/>
     </Provider>
   );
   const elementInstance = element.root;
@@ -56,7 +56,7 @@ it('UserAvatar with name with default size', () => {
 
 it('UserAvatar with more than 3 words name', () => {
   const element = TestRenderer.create(<Provider store={store}>
-      <UserAvatar username={'Mary'} name={'Mary Poppins Long Name'} picture={null} colorClasses="white bg-red"/>
+      <UserAvatar username={'Mary'} name={'Mary Poppins Long Name'}  colorClasses="white bg-red"/>
     </Provider>
   );
   const elementInstance = element.root;
@@ -65,7 +65,7 @@ it('UserAvatar with more than 3 words name', () => {
 
 it('UserAvatar with username containing space', () => {
   const element = TestRenderer.create(<Provider store={store}>
-      <UserAvatar username={'Mary Poppins Long Name'} picture={null} colorClasses="white bg-red"/>
+      <UserAvatar username={'Mary Poppins Long Name'}  colorClasses="white bg-red"/>
     </Provider>
   );
   const elementInstance = element.root;
@@ -77,7 +77,7 @@ it('UserAvatar with username containing space', () => {
 
 it('UserAvatar with editMode TRUE but without removeFn has NOT a CloseIcon', () => {
   const element = TestRenderer.create(<Provider store={store}>
-      <UserAvatar username={'Mary Poppins Long Name'} picture={null} colorClasses="white bg-red" editMode={true} />
+      <UserAvatar username={'Mary Poppins Long Name'} colorClasses="white bg-red" editMode={true} />
     </Provider>
   );
   const elementInstance = element.root;
@@ -89,7 +89,7 @@ it('UserAvatar with editMode TRUE but without removeFn has NOT a CloseIcon', () 
 
 it('UserAvatar with removeFn, but with editMode FALSE  has NOT a CloseIcon', () => {
   const element = TestRenderer.create(<Provider store={store}>
-      <UserAvatar username={'Mary Poppins Long Name'} picture={null} colorClasses="white bg-red" removeFn={() => console.log('no')} />
+      <UserAvatar username={'Mary Poppins Long Name'} colorClasses="white bg-red" removeFn={() => console.log('no')} />
     </Provider>
   );
   const elementInstance = element.root;
@@ -102,7 +102,7 @@ it('UserAvatar with removeFn, but with editMode FALSE  has NOT a CloseIcon', () 
 it('UserAvatar with removeFn and editMode TRUE has a CloseIcon', () => {
   let value = 0;
   const element = TestRenderer.create(<Provider store={store}>
-      <UserAvatar username={'Mary'} colorClasses="white bg-red" picture={null} removeFn={() => value = 1} editMode={true}/>
+      <UserAvatar username={'Mary'} colorClasses="white bg-red" removeFn={() => value = 1} editMode={true}/>
     </Provider>
   );
   const elementInstance = element.root;

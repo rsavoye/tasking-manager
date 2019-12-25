@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 
 import { useInboxQueryAPI, useInboxQueryParams } from '../hooks/UseInboxQueryAPI';
 
@@ -19,27 +19,33 @@ import { useOnClickOutside } from '../hooks/UseOnClickOutside';
 
 export const NotificationPopout = props => {
   const miniNotificationRef = useRef(null);
-  const [isPopoutFocus, setPopoutFocus] = useState(true);
 
-  useOnClickOutside(miniNotificationRef, () => setPopoutFocus(false));
+  useOnClickOutside(miniNotificationRef, () => props.setPopoutFocus(false));
 
   return (
-  <div
-  ref={miniNotificationRef}
-  style={{ 'minWidth': '390px', width: '390px','zIndex':'100', 'right': '4rem' }}
-  className={`fr ${isPopoutFocus ? '' : 'dn'} mt2 br2 absolute shadow-2 ph4 pb3 bg-white`}
->
-  <span className="absolute top-0 left-2 nt2 w1 h1 bg-white bl ml7 bt b--grey-light rotate-45"></span>
-  <InboxNavMini
-    newMsgCount={
-      props.state && props.state.notifications && props.state.notifications.filter(n => !n.read).length
-    }
-  />
-  <NotificationResultsMini retryFn={props.forceUpdate} state={props.state} className="" />
-  <InboxNavMiniBottom />
-</div>
-  )
-}
+    <div
+      ref={miniNotificationRef}
+      style={{ minWidth: '390px', width: '390px', zIndex: '100', right: '4rem' }}
+      className={`fr ${props.isPopoutFocus ? '' : 'dn'} mt2 br2 absolute shadow-2 ph4 pb3 bg-white`}
+    >
+      <span className="absolute top-0 left-2 nt2 w1 h1 bg-white bl ml7 bt b--grey-light rotate-45"></span>
+      <InboxNavMini
+        newMsgCount={
+          props.state &&
+          props.state.notifications &&
+          props.state.notifications.filter(n => !n.read).length
+        }
+      />
+      <NotificationResultsMini
+        liveUnreadCount={props.liveUnreadCount}
+        retryFn={props.forceUpdate}
+        state={props.state}
+        className="tl"
+      />
+      <InboxNavMiniBottom className="tl" setPopoutFocus={props.setPopoutFocus} />
+    </div>
+  );
+};
 
 export const NotificationsPage = props => {
   const initialData = {
@@ -50,7 +56,6 @@ export const NotificationsPage = props => {
     results: [],
     pagination: { hasNext: false, hasPrev: false, page: 1 },
   };
-
   const userToken = useSelector(state => state.auth.get('token'));
   const [inboxQuery, setInboxQuery] = useInboxQueryParams();
   const [forceUpdated, forceUpdate] = useForceUpdate();
@@ -60,30 +65,26 @@ export const NotificationsPage = props => {
     /* use replace to so the back button does not get interrupted */
     props.navigate('/login', { replace: true });
   }
+  // const [isPopoutFocus, setPopoutFocus] = useState(true);
 
   return (
     <>
-    <NotificationPopout
-     state={state}
-     forceUpdate={forceUpdate}
-     />
-    <div className="pt4-l pb5 ph5-l ph4 pt180 pull-center">
-      {
-        props.children
-        /* This is where the full notification body component is rendered
+      <div className="pt4-l pb5 ph5-l ph4 pt180 pull-center bg-tan">
+        {
+          props.children
+          /* This is where the full notification body component is rendered
         using the router, as a child route.
         */
-      }
-      <section className="cf">
+        }
+        <section className="cf">
+          <InboxNav />
+          <NotificationResults retryFn={forceUpdate} state={state} />
+          <ProjectCardPaginator projectAPIstate={state} setQueryParam={setInboxQuery} />
 
-        <InboxNav />
-        <NotificationResults retryFn={forceUpdate} state={state} />
-        <ProjectCardPaginator projectAPIstate={state} setQueryParam={setInboxQuery} />
-
-        {/* delete me! TDK */}
-        <code className={`dn`}>{JSON.stringify(state)}</code>
-      </section>
-    </div>
+          {/* delete me! TDK */}
+          <code className={`dn`}>{JSON.stringify(state)}</code>
+        </section>
+      </div>
     </>
   );
 };
@@ -104,6 +105,6 @@ export const NotificationDetail = props => {
       thisNotificationError={thisNotificationError}
       thisNotificationLoading={thisNotificationLoading}
       thisNotification={thisNotification}
-      />
+    />
   );
 };

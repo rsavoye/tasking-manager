@@ -2,7 +2,6 @@ import React from 'react';
 
 import ReactPlaceholder from 'react-placeholder';
 import 'react-placeholder/lib/reactPlaceholder.css';
-// import { nCardPlaceholders } from '../projectcard/nCardPlaceholder';
 
 import { NotificationCard, NotificationCardMini } from './notificationCard';
 import { FormattedMessage, FormattedNumber } from 'react-intl';
@@ -12,35 +11,50 @@ export const NotificationResultsMini = props => {
   return <NotificationResults {...props} useMiniCard={true} />;
 };
 
+
 export const NotificationResults = props => {
   const state = props.state;
-  // const cardWidthClass = 'w-third-l';
-
+  const stateNotifications = !props.useMiniCard
+    ? props.state.notifications
+    : props.state.unreadNotificationsMini;
+  const showRefreshButton =
+    !state.isError &&
+    props.useMiniCard &&
+    props.state.unreadNotificationsMini &&
+    props.liveUnreadCount !== props.state.unreadNotificationsMini.filter(n => !n.read).length;
+  // console.log ("server count-all:",props.liveUnreadCount, " vs. client read count:",props.state.unreadNotificationsMini && props.state.unreadNotificationsMini.filter(n => !n.read).length)
   return (
-    <div className={props.className}>
-        {state.isLoading ? (
-          <span>&nbsp;</span>
-        ) : (
-          !state.isError && (
-            
-            !props.useMiniCard && <p className="blue-grey ml3 pt2 f7"><FormattedMessage
+    <div className={props.className || ''}>
+      {!stateNotifications ? (
+        <span>&nbsp;</span>
+      ) : (
+        !state.isError &&
+        (!props.useMiniCard && (
+          <p className="blue-grey ml3 pt2 f7">
+            <FormattedMessage
               {...messages.showingXProjectsOfTotal}
               values={{
-                numProjects: state.notifications && state.notifications.length,
+                numProjects: stateNotifications && stateNotifications.length,
                 numRange:
                   state.pagination &&
                   state.pagination.page > 1 &&
                   state.pagination.page * state.pagination.perPage <= state.pagination.total &&
                   [': ', state.pagination.page * state.pagination.perPage, ' '].join(''),
                 numTotalProjects: (
-                  <FormattedNumber value={state.pagination && state.pagination.total} />
+                  <FormattedNumber
+                    value={
+                      state.pagination && !isNaN(state.pagination.total) && state.pagination.total
+                    }
+                  />
                 ),
               }}
-            /></p>
-          )
-        )}
+            />
+          </p>
+        ))
+      )}
+
       {state.isError ? (
-        <div className="bg-tan pa4">
+        <div className="bg-tan pa4 mt3">
           <FormattedMessage
             {...messages.errorLoadingTheXForY}
             values={{
@@ -50,21 +64,27 @@ export const NotificationResults = props => {
           />
           <div className="pa2">
             <button className="pa1" onClick={() => props.retryFn()}>
-              Retry
+              <FormattedMessage {...messages.notificationsRetry} />
             </button>
           </div>
         </div>
       ) : null}
       <div className={`cf ${!props.useMiniCard ? 'mh5 mh2-ns' : ''} db`}>
         <ReactPlaceholder
-          // customPlaceholder={nCardPlaceholders(5, cardWidthClass)}
-          ready={!state.isLoading}
+          ready={!state.isFirstLoading}
           type="media"
           rows={10}
         >
-          <NotificationCards pageOfCards={state.notifications} useMiniCard={props.useMiniCard} />
+          <NotificationCards pageOfCards={stateNotifications} useMiniCard={props.useMiniCard} />
         </ReactPlaceholder>
       </div>
+      {showRefreshButton && (
+        <div className="pa2 tc">
+          <button className="pa1" onClick={() => props.retryFn()}>
+            <FormattedMessage {...messages.notificationsRefresh} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -77,7 +97,11 @@ const NotificationCards = props => {
   const filteredCards = props.pageOfCards.filter(filterFn);
 
   if (filteredCards < 1) {
-    return (<div className="mb3 blue-grey"><FormattedMessage {...messages.noUnreadMessages}/></div>);
+    return (
+      <div className="mb3 blue-grey">
+        <FormattedMessage {...messages.noUnreadMessages} />
+      </div>
+    );
   }
 
   return filteredCards.map((card, n) =>

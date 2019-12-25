@@ -20,6 +20,7 @@ import { setLocale } from '../../store/actions/userPreferences';
 import { createLoginWindow } from '../../utils/login';
 import { NotificationBell } from './notificationBell';
 import { supportedLocales } from '../../utils/internationalization';
+import { useDebouncedCallback } from '../../hooks/UseThrottle'
 
 function getMenuItensForUser(userDetails) {
   const menuItems = [
@@ -56,10 +57,11 @@ const UserDisplay = props => {
 
 const AuthButtons = props => {
   const { logInStyle, signUpStyle, redirectTo } = props;
+  const [debouncedCreateLoginWindow] = useDebouncedCallback((redirectToPass)=>createLoginWindow(redirectToPass),3000, { leading: true })
 
   return (
     <>
-      <Button onClick={() => createLoginWindow(redirectTo)} className={logInStyle}>
+      <Button onClick={()=>debouncedCreateLoginWindow(redirectTo)} className={`${logInStyle}`}>
         <FormattedMessage {...messages.logIn}/>
       </Button>
       <Popup

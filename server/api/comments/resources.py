@@ -105,7 +105,7 @@ class CommentsProjectsRestAPI(Resource):
             project_messages = ChatService.get_messages(project_id, page)
             return project_messages.to_primitive(), 200
         except NotFound:
-            return {"Error": "No chat messages found for project"}, 404
+            return {"Error": "Project not found"}, 404
         except Exception as e:
             error_msg = f"Chat PUT - unhandled error: {str(e)}"
             current_app.logger.critical(error_msg)

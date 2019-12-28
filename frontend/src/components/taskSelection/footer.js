@@ -12,94 +12,67 @@ import { Button } from '../button';
 import { Imagery } from './imagery';
 import { MappingTypes } from '../mappingTypes';
 
-export function ContributeButton({ action, projectId, selectedTasks, activities }: Object) {
-  const token = useSelector(state => state.auth.get('token'));
-  const dispatch = useDispatch();
-
-  const updateReduxState = (tasks, project, status) => {
-    dispatch({type: 'SET_LOCKED_TASKS', tasks: tasks});
-    dispatch({type: 'SET_PROJECT', project: project});
-    dispatch({type: 'SET_TASKS_STATUS', status: status});
-  }
-  const lockTasks = () => {
-    if (action.startsWith('validate')) {
-      pushToLocalJSONAPI(
-        `/api/v2/projects/${projectId}/tasks/actions/lock-for-validation/`,
-        JSON.stringify({taskIds: selectedTasks}),
-        token
-      ).then(
-        res => {
-          updateReduxState(selectedTasks, projectId, 'LOCKED_FOR_VALIDATION');
-          navigate(`/projects/${projectId}/validate/`);
-        }
-      ).catch(e => console.log(e));
-    }
-    if (action.startsWith('map')) {
-      fetchLocalJSONAPI(
-        `/api/v2/projects/${projectId}/tasks/actions/lock-for-mapping/${selectedTasks[0]}/`,
-        token,
-        'POST'
-      ).then(
-        res => {
-          updateReduxState(selectedTasks, projectId, 'LOCKED_FOR_MAPPING');
-          navigate(`/projects/${projectId}/map/`);
-        }
-      ).catch(e => console.log(e));
-    }
-  };
-
-  return (
-    <Button className="white bg-red" onClick={() => lockTasks()}>
-      <FormattedMessage {...messages[action]} />
-    </Button>
-  );
-}
-
-export const TaskSelectionFooter = props => {
+const TaskSelectionFooter = props => {
   const [editor, setEditor] = useState(props.defaultUserEditor);
   const [editorOptions, setEditorOptions] = useState([]);
   const token = useSelector(state => state.auth.get('token'));
   const dispatch = useDispatch();
 
   const updateReduxState = (tasks, project, status) => {
-    dispatch({type: 'SET_LOCKED_TASKS', tasks: tasks});
-    dispatch({type: 'SET_PROJECT', project: project});
-    dispatch({type: 'SET_TASKS_STATUS', status: status});
-  }
+    dispatch({ type: 'SET_LOCKED_TASKS', tasks: tasks });
+    dispatch({ type: 'SET_PROJECT', project: project });
+    dispatch({ type: 'SET_TASKS_STATUS', status: status });
+  };
   const lockTasks = () => {
     if (props.taskAction.startsWith('validate')) {
       pushToLocalJSONAPI(
         `projects/${props.project.projectId}/tasks/actions/lock-for-validation/`,
-        JSON.stringify({taskIds: props.selectedTasks}),
-        token
-      ).then(
-        res => {
+        JSON.stringify({ taskIds: props.selectedTasks }),
+        token,
+      )
+        .then(res => {
           updateReduxState(props.selectedTasks, props.project.projectId, 'LOCKED_FOR_VALIDATION');
-          openEditor(editor, props.project, props.tasks, props.selectedTasks);
+          openEditor(editor, props.project, props.tasks, props.selectedTasks, [
+            window.innerWidth,
+            window.innerHeight,
+          ]);
           navigate(`/projects/${props.project.projectId}/validate/`);
-        }
-      ).catch(e => console.log(e));
+        })
+        .catch(e => console.log(e));
     }
     if (props.taskAction.startsWith('map')) {
       fetchLocalJSONAPI(
-        `projects/${props.project.projectId}/tasks/actions/lock-for-mapping/${props.selectedTasks[0]}/`,
+        `projects/${props.project.projectId}/tasks/actions/lock-for-mapping/${
+          props.selectedTasks[0]
+        }/`,
         token,
-        'POST'
-      ).then(
-        res => {
-          openEditor(editor, props.project, props.tasks, props.selectedTasks);
+        'POST',
+      )
+        .then(res => {
+          openEditor(editor, props.project, props.tasks, props.selectedTasks, [
+            window.innerWidth,
+            window.innerHeight,
+          ]);
           updateReduxState(props.selectedTasks, props.project.projectId, 'LOCKED_FOR_MAPPING');
           navigate(`/projects/${props.project.projectId}/map/`);
-        }
-      ).catch(e => console.log(e));
+        })
+        .catch(e => console.log(e));
     }
   };
 
   useEffect(() => {
-    if (props.taskAction && props.project.mappingEditors && props.taskAction.startsWith('validate')) {
-      setEditorOptions(getEditors().filter(i => props.project.validationEditors.includes(i.backendValue)));
+    if (
+      props.taskAction &&
+      props.project.mappingEditors &&
+      props.taskAction.startsWith('validate')
+    ) {
+      setEditorOptions(
+        getEditors().filter(i => props.project.validationEditors.includes(i.backendValue)),
+      );
     } else {
-      setEditorOptions(getEditors().filter(i => props.project.mappingEditors.includes(i.backendValue)));
+      setEditorOptions(
+        getEditors().filter(i => props.project.mappingEditors.includes(i.backendValue)),
+      );
     }
   }, [props.taskAction, props.project.mappingEditors, props.project.validationEditors]);
 
@@ -147,3 +120,5 @@ export const TaskSelectionFooter = props => {
     </div>
   );
 };
+
+export default TaskSelectionFooter;
